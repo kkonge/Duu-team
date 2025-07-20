@@ -35,3 +35,11 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+node_modules
+.expo
+.expo-shared
+.DS_Store
+*.log
+android/.gradle
+ios/Pods
