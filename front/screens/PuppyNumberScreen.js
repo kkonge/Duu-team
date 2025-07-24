@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Pressable,
@@ -10,21 +9,25 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-export default function NameInputScreen() {
+export default function NumberOfDogsScreen() {
   const navigation = useNavigation();
-  const [name, setName] = useState('');
+  const [selectedNumber, setSelectedNumber] = useState(null);
 
-  const isValid = name.trim().length > 0;
+  const isValid = selectedNumber !== null;
 
   const handleNext = () => {
-    if (isValid) {
-      navigation.navigate('NextScreen', { name }); // 다음 단계로 이동
-    }
-  };
+  if (!isValid) return;
+
+  if (selectedNumber === 1) {
+    navigation.navigate('OneDogProfile'); 
+  } else {
+    navigation.navigate('MultipleDogProfile', { numberOfDogs: selectedNumber });
+  }
+};
 
   return (
     <View style={styles.container}>
-      {/* 뒤로가기 */}
+      {/* 뒤로가기 버튼 */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back-circle" size={32} color="#888" />
       </TouchableOpacity>
@@ -36,16 +39,30 @@ export default function NameInputScreen() {
       </View>
 
       {/* 안내 텍스트 */}
-      <Text style={styles.title}>이름을{'\n'}입력해 주세요</Text>
+      <Text style={styles.title}>몇 마리의 강아지를{'\n'}등록할까요?</Text>
 
-      {/* 입력창 */}
-      <TextInput
-        style={styles.input}
-        placeholder="이름"
-        placeholderTextColor="#ccc"
-        value={name}
-        onChangeText={setName}
-      />
+      {/* 선택 박스 */}
+      <View style={styles.boxContainer}>
+        {[1, 2, 3, 4].map((num) => (
+          <TouchableOpacity
+            key={num}
+            style={[
+              styles.box,
+              selectedNumber === num && styles.boxSelected,
+            ]}
+            onPress={() => setSelectedNumber(num)}
+          >
+            <Text
+              style={[
+                styles.boxText,
+                selectedNumber === num && styles.boxTextSelected,
+              ]}
+            >
+              {num}마리
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* 다음 버튼 */}
       <Pressable
@@ -70,14 +87,14 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 50,
+    top: 70,
     left: 20,
   },
   progressBar: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 40,
-    marginTop: 10,
+    marginTop: 60,
   },
   progressDot: {
     width: 8,
@@ -95,16 +112,32 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    textAlign: 'left',
-    marginBottom: 40,
+    textAlign: 'center',
+    marginBottom: 30,
   },
-  input: {
-    fontSize: 18,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-    paddingVertical: 12,
-    marginBottom: 40,
-    color: '#000',
+  boxContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 60,
+  },
+  box: {
+    flex: 1,
+    paddingVertical: 20,
+    marginHorizontal: 6,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  boxSelected: {
+    backgroundColor: '#000',
+  },
+  boxText: {
+    fontSize: 16,
+    color: '#444',
+  },
+  boxTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   nextButton: {
     position: 'absolute',

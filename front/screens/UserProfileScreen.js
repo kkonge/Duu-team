@@ -6,12 +6,16 @@ import {
   Animated,
   TextInput,
   Pressable,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // 추가
-
+import { useNavigation } from '@react-navigation/native'; 
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 export default function YourProfileScreen() {
   const [showForm, setShowForm] = useState(false);
-  const navigation = useNavigation(); // 추가
+  const navigation = useNavigation(); 
+  const [imageUri, setImageUri] = useState(null);
 
   const fadeHello = useRef(new Animated.Value(0)).current;
   const fadeMsg = useRef(new Animated.Value(0)).current;
@@ -42,6 +46,25 @@ export default function YourProfileScreen() {
     }, 2500);
   }, []);
 
+  const pickImage = async () => {
+    const permission= await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if(!permission.granted){
+        alert('앨범 접근 권한이 필요합니다.');
+        return;
+    }
+
+    const result= await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4,3],
+        quality:1,
+    });
+
+    if (!result.canceled) { 
+        setImageUri(result.assets[0].uri);
+    }
+};
+
   const handleNext = () => {
     setShowForm(true);
     Animated.timing(formFade, {
@@ -51,16 +74,22 @@ export default function YourProfileScreen() {
     }).start();
   };
 
-  const goToPuppyProfile = () => {
-    navigation.navigate('PuppyProfile'); // 👈 StackNavigator에 등록되어 있어야 함
+  const goToFamilyCheck = () => {
+    navigation.navigate('FamilyCheck')
   };
 
   return (
+    
     <View style={styles.container}>
+         {showForm && (
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back-circle" size={32} color="#888" />
+      </TouchableOpacity>
+    )}
       {!showForm ? (
         <View style={styles.centered}>
           <Animated.Text style={[styles.text, { opacity: fadeHello }]}>
-            안녕하세요!
+            안녕하세요☺️
           </Animated.Text>
           <Animated.Text style={[styles.text, { opacity: fadeMsg }]}>
             당신의 프로필을 작성해주세요!
@@ -73,21 +102,29 @@ export default function YourProfileScreen() {
         </View>
       ) : (
         <Animated.View style={[styles.formContainer, { opacity: formFade }]}>
+            {/* 프로필 사진 선택 */}
+            <TouchableOpacity style={styles.imageBox} onPress={pickImage}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+            ) : (
+              <Text style={styles.imagePlaceholder}>+ 프로필 사진 등록</Text>
+            )}
+          </TouchableOpacity>
           <Text style={styles.label}>NAME</Text>
-          <TextInput style={styles.input} placeholder="예: JOY" />
+          <TextInput style={styles.input} placeholder="예: HANNA" />
 
-          <Text style={styles.label}>Relationship</Text>
+          <Text style={styles.label}>RELATIONSHIP</Text>
           <TextInput style={styles.input} placeholder="예: Mommy" />
 
           <Text style={styles.label}>GENDER</Text>
-          <TextInput style={styles.input} placeholder="예: FEMALE" />
+          <TextInput style={styles.input} placeholder="예: MALE/FEMALE" />
 
           <Text style={styles.label}>EMAIL</Text>
           <TextInput style={styles.input} placeholder="joy0301@gmail.com" />
 
-          {/* 다음(PuppyProfile)으로 이동하는 버튼 */}
-          <Pressable style={[styles.nextButton, { marginTop: 40 }]} onPress={goToPuppyProfile}>
-            <Text style={styles.nextButtonText}>다음</Text>
+          {/* NextButton */}
+          <Pressable style={[styles.nextButton, { marginTop: 40 }]} onPress={goToFamilyCheck}>
+            <Text style={styles.nextButtonText}>Next</Text>
           </Pressable>
         </Animated.View>
       )}
@@ -109,7 +146,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   nextButton: {
-    backgroundColor: '#4B9EFF',
+    backgroundColor: '#000',
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 10,
@@ -135,5 +172,30 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 16,
     color: '#333',
+  },
+   backButton: {
+    position: 'absolute',
+    top: 70,
+    left: 20,
+  },
+  imageBox: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  imagePlaceholder: {
+    fontSize: 16,
+    color: '#999',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    resizeMode: 'cover',
   },
 });

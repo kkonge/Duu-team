@@ -1,12 +1,11 @@
-// App.tsx
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import StackNavigator from './navigation/StackNavigator';
 
-export default function App() {
+export default function App(){
   return (
     <NavigationContainer>
       <StackNavigator />
     </NavigationContainer>
-  );
+  )
 }

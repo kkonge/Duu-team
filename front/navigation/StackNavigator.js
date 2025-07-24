@@ -1,22 +1,27 @@
-// StackNavigator.tsx (JS 또는 TSX)
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LoginSignupScreen from '../screens/LoginSignupScreen';
 import LoginScreen from '../screens/LoginScreen';
-import LogScreen from '../screens/LogScreen';
-import SignUpScreen from '../screens/SignUpScreen';
-import YourProfileScreen from '../screens/YourProfileScreen';
-import PuppyProfileScreen from '../screens/PuppyProfileScreen'; 
+import UserProfileScreen from '../screens/UserProfileScreen';
+import FamilyCheckScreen from '../screens/FamilyCheckScreen';
+import PuppyNumberScreen from '../screens/PuppyNumberScreen';
+import OneDogProfileScreen from '../screens/OneDogProfileScreen';
+import MultipleDogProfileScreen from '../screens/MultipleDogProfileScreen';
+import PuppySelectScreen from '../screens/PuppySelectScreen';
+const Stack= createNativeStackNavigator();
 
-const Stack = createNativeStackNavigator();
-
-export default function StackNavigator() {
-  return (
-    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Log" component={LogScreen} />
-      <Stack.Screen name="SignUp" component={SignUpScreen} />
-      <Stack.Screen name="YourProfile" component={YourProfileScreen} />
-      <Stack.Screen name="PuppyProfile" component={PuppyProfileScreen} />
-    </Stack.Navigator>
-  );
+export default function StackNavigator(){
+    return(
+        <Stack.Navigator initialRouteName='LoginSignup' screenOptions={{headerShown: false}}>
+            <Stack.Screen name='LoginSignup' component={LoginSignupScreen} />
+            <Stack.Screen name='Login' component={LoginScreen} />
+            <Stack.Screen name='UserProfile' component={UserProfileScreen} />
+            <Stack.Screen name='FamilyCheck' component={FamilyCheckScreen} />
+            <Stack.Screen name='PuppyNumber' component={PuppyNumberScreen} />
+            <Stack.Screen name='OneDogProfile' component={OneDogProfileScreen} />
+            <Stack.Screen name='MultipleDogProfile' component={MultipleDogProfileScreen} />
+            <Stack.Screen name='PuppySelect' component={PuppySelectScreen} />
+       
+        </Stack.Navigator>
+    )
 }
