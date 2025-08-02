@@ -23,10 +23,9 @@ export default function PuppySelectScreen() {
           <TouchableOpacity
             key={index}
             style={styles.card}
-            onPress={() => {
-             
-            }}
+            onPress={() => {navigation.navigate('Home', { selectedDog: dog })}}
           >
+        
             {dog.imageUri ? (
               <Image source={{ uri: dog.imageUri }} style={styles.dogImage} />
             ) : (
@@ -39,7 +38,7 @@ export default function PuppySelectScreen() {
         {/* + 버튼 */}
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('NumberOfDogsScreen')}
+          onPress={() => navigation.navigate('OneDogProfile')}
         >
           <Text style={styles.plus}>＋</Text>
         </TouchableOpacity>
