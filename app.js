@@ -27,6 +27,9 @@ app.put('/user_update', (req, res)=>{   //사용자 정보 갱신
 app.put('/pet_update', (req, res)=>{   //강아지 정보 갱신 
   petsFunction.pet_update(req, res);
 });
+app.get('/', (req, res)=>{
+  console.log('바보');
+});
 
 app.listen(3000,()=>{
   console.log('server is running on 3000 port');
