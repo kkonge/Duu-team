@@ -35,7 +35,7 @@ app.delete('/delete_user', (req, res)=>{  //사용자 정보 완전 삭제
 app.delete('/delete_pet', (req, res)=>{ //강아지 정보 완전 삭제 
   petsFunction.delete_pet(req, res);
 });
-app.delete('/deleteㅇpdpdp_pet', (req, res)=>{ //강아지 정보 완전 삭제 
+app.delete('/deleteㅇpdpㅇㅁㅈㅇㅁㅇㅁdp_pet', (req, res)=>{ 
   console.log('dsdad');
 });
 
