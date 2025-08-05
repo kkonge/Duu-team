@@ -27,8 +27,13 @@ app.put('/user_update', (req, res)=>{   //사용자 정보 갱신
 app.put('/pet_update', (req, res)=>{   //강아지 정보 갱신 
   petsFunction.pet_update(req, res);
 });
-app.get('/', (req, res)=>{
-  console.log('바보');
+
+app.delete('/delete_user', (req, res)=>{  //사용자 정보 완전 삭제 
+  usersFunction.delete_user(req ,res);
+});
+
+app.delete('/delete_pet', (req, res)=>{ //강아지 정보 완전 삭제 
+  petsFunction.delete_pet(req, res);
 });
 
 app.listen(3000,()=>{

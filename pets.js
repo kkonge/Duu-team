@@ -36,4 +36,16 @@ exports.pet_update= function(req, res){
     }
     return res.status(200).json({success: true, message: '강아지 정보 저장되었습니다.'})
   })
-}
+};
+
+exports.delete_pet = function(req, res){
+  const {name} = req.body;
+  db.query('DELETE FROM pets WHERE name=?', [name], (error, result)=>{
+    if(error){
+      return res.status(500).json({success: false, message: '데이터 베이스 오류'})
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: '해당 이름의 강아지가 없습니다.' });
+    }
+  })
+};

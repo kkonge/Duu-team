@@ -48,7 +48,6 @@ exports.user_register = function(req, res){
     }); 
 };
 
-
 exports.user_update= function(req, res){
   const {new_id, new_password, id} = req.body;
   db.query(`UPDATE users SET id=?, password=? WHERE id=?`, [new_id, new_password, id], (error, result)=>{
@@ -57,4 +56,16 @@ exports.user_update= function(req, res){
     }
     return res.status(200).json({success: true, message: '사용자 정보 저장되었습니다.'})
   })
-}
+};
+
+exports.delete_user = function(req ,res){
+  const {id} = req.body;
+  db.query('DELETE FROM usres WHERE id=?', [id], (error, result)=>{
+    if(error){
+      return res.status(500).json({success: false, message: '데이터 베이스 오류'})
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: '올바른 아이디를 써주세요.' });
+    }
+  })
+};
