@@ -10,6 +10,23 @@ const SECRET_KEY = 'duu_secret_key'; //secret key는 암호화?? 환경 변수�
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
+function verifyToken(req, res, next) { // 토큰 검증 미들웨어
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: '토큰이 없습니다.' });
+  }
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) {
+      return res.status(403).json({ success: false, message: '유효하지 않은 토큰입니다.' });
+    }
+    req.user = user;
+    next();
+  });
+}
+
 exports.home = function(req, res){
   try{
     db.query(`SELECT * FROM users`, (error, users)=>{
@@ -28,7 +45,7 @@ exports.home = function(req, res){
   }
 }
 
-exports.user_register = function(req, res){
+exports.user_register = function(req, res){ //회원가입
     const {id, password} = req.body;
     
     if(!id ||!password){
@@ -52,7 +69,7 @@ exports.user_register = function(req, res){
     }); 
 };
 
-exports.user_update= function(req, res){
+exports.user_update= function(req, res){ //사용자 정보 갱신
   const {new_id, new_password, id} = req.body;
   db.query(`UPDATE users SET id=?, password=? WHERE id=?`, [new_id, new_password, id], (error, result)=>{
     if(error){
@@ -62,7 +79,7 @@ exports.user_update= function(req, res){
   })
 };
 
-exports.delete_user = function(req ,res){
+exports.delete_user = function(req ,res){ //사용자 정보 완전 삭제
   const {id} = req.body;
   db.query('DELETE FROM users WHERE id=?', [id], (error, result)=>{
     if(error){
@@ -74,7 +91,7 @@ exports.delete_user = function(req ,res){
   })
 };
 
-exports.user_login = function(req, res){
+exports.user_login = function(req, res){ //사용자 로그인
   const {id, password} = req.body;
 
   if (!id || !password){
@@ -92,4 +109,19 @@ exports.user_login = function(req, res){
     const token = jwt.sign({ id: user[0].id }, SECRET_KEY, { expiresIn: '1h' });
     return res.json({success: true, message: '로그인 성공', token});
   })
+}
+
+exports.user_info = function(req, res){ //사용자 정보 조회
+  const { id } = req.user;
+  db.query(`SELECT * FROM users WHERE id=?`, [id], (error, user)=>{
+    if (error) {
+      return res.status(500).json({ success: false, message: '서버 에러' });
+    }
+    if (user.length === 0) {
+      return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const { password, ...userWithoutPassword } = user[0];
+    return res.json({ success: true, user: user[0] });
+  });
 }

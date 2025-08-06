@@ -41,6 +41,10 @@ app.delete('/delete_pet', (req, res)=>{ //강아지 정보 완전 삭제
   console.log("확인용 ");
 });
 
+// 사용자 정보 조회
+app.get('/user_info', usersFunction.verifyToken, usersFunction.user_info);
+
+
 app.listen(3000,()=>{
   console.log('server is running on 3000 port');
 });
