@@ -20,6 +20,10 @@ app.post('/pet_register', (req, res)=>{  //강아지 등록
   petsFunction.pet_register(req, res)
 });
 
+app.post('/login', (req, res)=>{ //사용자 로그인
+  usersFunction.user_login(req, res);
+})
+
 app.put('/user_update', (req, res)=>{   //사용자 정보 갱신 
   usersFunction.user_update(req, res);
 });
