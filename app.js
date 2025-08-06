@@ -41,6 +41,10 @@ app.post('/diary/upload', upload.array('photos', 5), (req, res) => {  //일기 �
   diary.diary_upload(req, res);
 });
 
+app.get('/121/2/12/11', (req, res)=>{  //이 라우트는 아예 없애도 됨
+  console.log('확인용');
+})
+
 
 app.get('/home', (req, res)=>{      //홈화면 어떻게 할지 프론트 팀이랑 상의
   usersFunction.home(req, res);
