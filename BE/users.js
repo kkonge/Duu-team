@@ -10,7 +10,7 @@ const SECRET_KEY = 'duu_secret_key'; //secret key는 암호화?? 환경 변수�
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
-function verifyToken(req, res, next) { // 토큰 검증 미들웨어
+exports.verifyToken = function(req, res, next) { // 토큰 검증 미들웨어
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
