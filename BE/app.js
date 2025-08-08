@@ -20,6 +20,8 @@ const storage = multer.diskStorage({  //storage 선언
 }); 
 
 app.use('/user', express.static('uploads'));
+app.use('/uploads', express.static('uploads'));
+
 
 const upload = multer({   //미들웨어
   storage: storage, 
@@ -38,6 +40,11 @@ app.get('/', (req, res) => {    //임시 이미지 업로드 보는용 코드
 app.post('/diary/upload', upload.array('photos', 5), (req, res) => {  //일기 업로드
   diary.diary_upload(req, res);
 });
+
+app.get('/diary_photo', usersFunction.verifyToken, (req, res) => { //갤러리에서 보이는 사진 경로 가져오기
+  diary.diary_photo(req, res);
+});
+
 
 app.get('/home', (req, res)=>{      //홈화면 어떻게 할지 프론트 팀이랑 상의
   usersFunction.home(req, res);
@@ -74,6 +81,7 @@ app.delete('/delete_pet', (req, res)=>{ //강아지 정보 완전 삭제
 
 // 사용자 정보 조회
 app.get('/user_info', usersFunction.verifyToken, usersFunction.user_info);
+
 
 app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   if (err instanceof multer.MulterError) {

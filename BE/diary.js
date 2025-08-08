@@ -91,3 +91,29 @@ app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   }
   next();
 });
+
+
+exports.diary_photo = function(req, res){
+    const userId = req.user.id; 
+  db.query(
+    `SELECT * FROM diary_photo WHERE id=? ORDER BY created_at DESC`,
+    [userId],
+    (error, results) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'DB 오류' });
+      }
+      const photos = results.map(photo => {  //사진 경로들 저장 
+        return {
+          id: photo.id,
+          diary_id: photo.diary_id,
+          photo_path: photo.photo_path,
+          original_name: photo.original_name,
+          created_at: photo.created_at,
+          photo_url: `http://서버주소/${photo.photo_path}` // 이 부분은 앱에 맞춰서 수정해야할 가능성o 
+        };
+      });
+      res.json({ success: true, photos });
+    }
+  );
+};
