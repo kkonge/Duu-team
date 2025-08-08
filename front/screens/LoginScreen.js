@@ -1,62 +1,49 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 
-export default function NameInputScreen() {
-  const navigation = useNavigation();
-  const [name, setName] = useState('');
+export default function LoginScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const isValid = name.trim().length > 0;
-
-  const handleNext = () => {
-    if (isValid) {
-      navigation.navigate('NextScreen', { name }); // 다음 단계로 이동
-    }
+  const handleLogin = () => {
+    console.log('로그인 시도:', email, password);
   };
 
   return (
     <View style={styles.container}>
-      {/* 뒤로가기 */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back-circle" size={32} color="#888" />
       </TouchableOpacity>
 
-      {/* 프로그레스 바 */}
-      <View style={styles.progressBar}>
-        <View style={styles.progressDot} />
-        <View style={styles.progressTrail} />
-      </View>
+      <Text style={styles.title}>Log in</Text>
 
-      {/* 안내 텍스트 */}
-      <Text style={styles.title}>이름을{'\n'}입력해 주세요</Text>
-
-      {/* 입력창 */}
       <TextInput
         style={styles.input}
-        placeholder="이름"
-        placeholderTextColor="#ccc"
-        value={name}
-        onChangeText={setName}
+        placeholder="your@email.com"
+        placeholderTextColor="#888"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
 
-      {/* 다음 버튼 */}
-      <Pressable
-        style={[styles.nextButton, { backgroundColor: isValid ? '#000' : '#eee' }]}
-        onPress={handleNext}
-        disabled={!isValid}
-      >
-        <Text style={[styles.nextButtonText, { color: isValid ? '#fff' : '#aaa' }]}>
-          다음
-        </Text>
-      </Pressable>
+      <TextInput
+        style={styles.input}
+        placeholder="password"
+        placeholderTextColor="#888"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginButtonText}>Log in</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+        <Text style={styles.forgotText}>Forgot your Password?</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -64,60 +51,46 @@ export default function NameInputScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 30,
+    paddingTop: 100,
     backgroundColor: '#fff',
-    paddingTop: 60,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-  },
-  progressBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 40,
-    marginTop: 10,
-  },
-  progressDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#000',
-  },
-  progressTrail: {
-    width: 60,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#eee',
-    marginLeft: 8,
   },
   title: {
-    fontSize: 22,
+    fontSize: 32,
     fontWeight: 'bold',
-    textAlign: 'left',
-    marginBottom: 40,
+    marginBottom: 30,
+    marginTop: 20,
   },
   input: {
-    fontSize: 18,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#eee',
+    borderRadius: 8,
     paddingVertical: 12,
-    marginBottom: 40,
-    color: '#000',
-  },
-  nextButton: {
-    position: 'absolute',
-    bottom: 40,
-    left: 24,
-    right: 24,
-    height: 52,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nextButtonText: {
+    paddingHorizontal: 15,
     fontSize: 16,
+    marginBottom: 15,
+  },
+  loginButton: {
+    backgroundColor: '#000',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
+  },
+  forgotText: {
+    marginTop: 15,
+    color: '#D01A1A',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+   backButton: {
+    position: 'absolute',
+    top: 70,
+    left: 20,
+    zIndex: 10,
   },
 });

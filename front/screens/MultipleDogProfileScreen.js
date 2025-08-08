@@ -60,7 +60,7 @@ export default function MultipleDogProfileScreen() {
     };
     setDogProfiles(updatedProfiles);
 
-    // 페이드 아웃 → 데이터 저장 → 다음 폼으로 페이드 인
+   
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 400,
@@ -96,7 +96,7 @@ export default function MultipleDogProfileScreen() {
         <Ionicons name="arrow-back-circle" size={32} color="#888" />
       </TouchableOpacity>
 
-      {/* 제목 */}
+      
       <Text style={styles.title}>
         {currentStep + 1}번째 강아지를 등록해주세요!
       </Text>
@@ -158,22 +158,7 @@ export default function MultipleDogProfileScreen() {
             ))}
           </View>
 
-          <Text style={styles.label}>NEUTERED</Text>
-          <View style={styles.optionGroup}>
-            {['YES', 'NO'].map((n) => (
-              <Pressable
-                key={n}
-                style={[styles.optionBox, formData.neutered === n && styles.optionBoxSelected]}
-                onPress={() => handleSelect('neutered', n)}
-              >
-                <Text
-                  style={[styles.optionText, formData.neutered === n && styles.optionTextSelected]}
-                >
-                  {n}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+         
 
           <Text style={styles.label}>SIZE</Text>
           <View style={styles.optionGroup}>
@@ -267,7 +252,7 @@ const styles = StyleSheet.create({
   optionBox: {
     flex: 1,
     marginHorizontal: 4,
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
     alignItems: 'center',
@@ -283,16 +268,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  nextButton: {
-    marginTop: 20,
+   nextButton: {
     backgroundColor: '#000',
-    paddingVertical: 14,
+    paddingHorizontal: 30,
+    paddingVertical: 12,
     borderRadius: 10,
-    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: 20,
   },
   nextButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
   },
 });

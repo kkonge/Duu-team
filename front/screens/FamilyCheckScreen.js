@@ -3,37 +3,20 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 
 export default function InviteCheckScreen({ navigation }) {
-  const questionOpacity = useRef(new Animated.Value(0)).current;
-  const buttonsOpacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(questionOpacity, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
-
-    setTimeout(() => {
-      Animated.timing(buttonsOpacity, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }).start();
-    }, 1000);
-  }, []);
+ 
 
   return (
     <View style={styles.container}>
-      {/* 뒤로가기 버튼 */}
+
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back-circle" size={32} color="#888" />
       </TouchableOpacity>
 
-      <Animated.Text style={[styles.questionText, { opacity: questionOpacity }]}>
+      <Text style={[styles.questionText]}>
         앱을 사용 중인 가족분이 있나요?
-      </Animated.Text>
+      </Text>
 
-      <Animated.View style={[styles.buttonGroup, { opacity: buttonsOpacity }]}>
+      <View style={[styles.buttonGroup]}>
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('PuppyNumber')}
@@ -47,18 +30,19 @@ export default function InviteCheckScreen({ navigation }) {
         >
           <Text style={styles.buttonText}>네, 초대코드를 입력할게요!</Text>
         </TouchableOpacity>
-      </Animated.View>
-    </View>
+      </View>
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#fff',
     paddingHorizontal: 30,
+    paddingTop:270,
   },
   backButton: {
     position: 'absolute',
@@ -66,24 +50,22 @@ const styles = StyleSheet.create({
     left: 20,
   },
   questionText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontSize: 18,
     marginBottom: 50,
   },
   buttonGroup: {
-    width: '100%',
+    width: '90%',
     gap: 15, 
   },
   button: {
-    backgroundColor: '#000',
+    backgroundColor: '#ccc',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#000',
+    fontSize: 17,
     textAlign: 'center',
   },
 });
