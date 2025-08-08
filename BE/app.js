@@ -75,6 +75,14 @@ app.delete('/delete_pet', (req, res)=>{ //강아지 정보 완전 삭제
 // 사용자 정보 조회
 app.get('/user_info', usersFunction.verifyToken, usersFunction.user_info);
 
+app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
+  if (err instanceof multer.MulterError) {
+    return res.status(500).send('업로드 에러: ' + err.message);
+  } else if (err) {
+    return res.status(500).send('서버 에러: ' + err.message);
+  }
+  next();
+});
 
 app.listen(3000,()=>{
   console.log('server is running on 3000 port');
