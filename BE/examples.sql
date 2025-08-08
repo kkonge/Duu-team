@@ -14,7 +14,7 @@ CREATE TABLE pets(
     gender VARCHAR(20) NOT NULL,
     breed VARCHAR(20) NOT NULL,
     id VARCHAR(20) NOT NULL,
-    FOREIGN KEY(id) REFERENCES users(id)
+    FOREIGN KEY(id) REFERENCES users(id) ON UPDATE CASCADE
 );
 
 INSERT INTO pets VALUES (2,'apple','male','Golden Retriever','1');

@@ -4,15 +4,15 @@ CREATE TABLE diaries(
     title VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(id) REFERENCES users(id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    CONSTRAINT fk_diaries_id FOREIGN KEY(id) REFERENCES users(id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE diary_photo(
     id VARCHAR(20) NOT NULL,
-    diary_id  INT NOT NULL,
+    diary_id INT NOT NULL,
     photo_path VARCHAR(500) NOT NULL,
     original_name VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (diary_id) REFERENCES diaries(diary_id),
-    FOREIGN KEY(id) REFERENCES users(id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    CONSTRAINT fk_diary_photo_diary_id FOREIGN KEY (diary_id) REFERENCES diaries(diary_id) ON UPDATE CASCADE,
+    CONSTRAINT fk_diary_photo_id FOREIGN KEY (id) REFERENCES users(id) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
