@@ -44,12 +44,8 @@ export default function PuppySelectScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* 하단 탭바 */}
-      <View style={styles.tabBar}>
-        <Ionicons name="pin" size={24} color="#000" />
-        <Ionicons name="home" size={24} color="#000" />
-        <Ionicons name="megaphone" size={24} color="#000" />
-      </View>
+  
+     
     </View>
   );
 }

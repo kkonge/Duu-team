@@ -5,19 +5,20 @@ export default function LoginSignupScreen({navigation}){
     return(
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.logo}>Doggy</Text>
+                <Text style={styles.logo}>DOGGY</Text>   
+              <Text style={styles.infoText}>Daily Care for your Best Friend</Text>
             </View>
         
         <View style={styles.bottomContainer}>
             
             {/*Start Button*/}
-            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('UserProfile')}>
-                <Text style={styles.startButtonText}>시작하기</Text>
+            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('UserName')}>
+                <Text style={styles.startButtonText}>GET STARTED</Text>
             </TouchableOpacity>
 
             {/*Login Button*/}
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginText}>이미 회원이신가요?</Text>
+                <Text style={styles.loginText}>Already have an account? Log in</Text>
             </TouchableOpacity>
 
      
@@ -36,19 +37,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   header: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    marginTop: 50,
   },
   logo: {
-    fontSize: 30,
+    fontFamily: 'Pretendard-ExtraBold',
     fontWeight: 'bold',
-    color: '#000',
+    fontSize: 45,
+    color: '#69DA00',
   },
   bottomContainer: {
     alignItems: 'center',
     marginBottom: 60,
   },
   startButton: {
-   width: '80%',
+   width: '90%',
     paddingVertical: 14,
     backgroundColor: 'black',
     borderRadius: 20,
@@ -58,14 +61,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   startButtonText: {
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#fff',
-    fontSize: 24,
+    fontSize: 20,
   },
   loginText: {
     marginTop: 20,
     fontSize: 18,
     color: '#666',
+  },
+ 
+  infoText: {
+    fontFamily: 'Futura',
+    fontSize: 18,
+    color: '#666',
+    textAlign: 'center',
+    marginHorizontal: 20,
+    marginTop: 5,
   },
 
 });

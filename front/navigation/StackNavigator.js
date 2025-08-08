@@ -10,6 +10,9 @@ import MultipleDogProfileScreen from '../screens/MultipleDogProfileScreen';
 import PuppySelectScreen from '../screens/PuppySelectScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import HomeScreen from '../screens/HomeScreen';
+import UserNameScreen from '../screens/UserNameScreen';
+import UserRelationshipScreen from '../screens/UserRelationshipScreen';
+import SignupScreen from '../screens/SignupScreen';
 const Stack= createNativeStackNavigator();
 
 export default function StackNavigator(){
@@ -25,6 +28,9 @@ export default function StackNavigator(){
             <Stack.Screen name='PuppySelect' component={PuppySelectScreen} />
             <Stack.Screen name='Calendar' component={CalendarScreen} />
             <Stack.Screen name='Home' component={HomeScreen} />
+            <Stack.Screen name='UserName' component={UserNameScreen} />
+            <Stack.Screen name='UserRelationship' component={UserRelationshipScreen} />
+            <Stack.Screen name='Signup' component={SignupScreen} />
         </Stack.Navigator>
     )
 }
