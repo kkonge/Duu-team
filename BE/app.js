@@ -4,9 +4,40 @@ const db = require('./db');
 const cors = require('cors');
 const usersFunction = require('./users.js');
 const petsFunction = require('./pets.js');
+const multer = require('multer');
+const diary = require('./diary.js');
 
 app.use(express.json());
 app.use(cors());
+
+const storage = multer.diskStorage({  //storage 선언 
+  destination: function(req, file, cb){
+    cb(null, 'uploads/');
+  },
+  filename: function(req, file, cb){
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+}); 
+
+app.use('/user', express.static('uploads'));
+
+const upload = multer({   //미들웨어
+  storage: storage, 
+  limits: {files :5 }
+});  
+
+app.set('views', './views_file');
+app.set('view engine', 'html');
+
+//-----------------------------------------------------------------------
+
+app.get('/', (req, res) => {    //임시 이미지 업로드 보는용 코드
+  res.sendFile(__dirname + '/views_file/upload.html');
+});
+
+app.post('/diary/upload', upload.array('photos', 5), (req, res) => {  //일기 업로드
+  diary.diary_upload(req, res);
+});
 
 app.get('/home', (req, res)=>{      //홈화면 어떻게 할지 프론트 팀이랑 상의
   usersFunction.home(req, res);
