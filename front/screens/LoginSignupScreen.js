@@ -11,15 +11,20 @@ export default function LoginSignupScreen({navigation}){
         
         <View style={styles.bottomContainer}>
             
-            {/*Start Button*/}
-            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('UserName')}>
-                <Text style={styles.startButtonText}>GET STARTED</Text>
-            </TouchableOpacity>
 
             {/*Login Button*/}
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginText}>Already have an account? Log in</Text>
+            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.startButtonText}>Log in</Text>
             </TouchableOpacity>
+
+
+            {/*Start Button*/}
+            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('Signup')}>
+                <Text style={styles.startButtonText}>Create an Account</Text>
+            </TouchableOpacity>
+
+            
+          
 
      
           </View>
@@ -41,10 +46,10 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   logo: {
-    fontFamily: 'Pretendard-ExtraBold',
+    fontFamily: 'Futura',
     fontWeight: 'bold',
     fontSize: 45,
-    color: '#69DA00',
+    color: '#000',
   },
   bottomContainer: {
     alignItems: 'center',

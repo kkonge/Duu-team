@@ -1,11 +1,14 @@
-
 import React, { useEffect, useState } from 'react';
 import { Image, View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function DetailScreen({ route }) {
+  const navigation = useNavigation();
+
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -45,7 +48,7 @@ export default function DetailScreen({ route }) {
   };
 
   const deleteToDo = async (key) => {
-    Alert.alert('Delete', [
+    Alert.alert('Delete', 'Are you sure?', [
       { text: 'Cancel' },
       {
         text: 'Delete',
@@ -66,57 +69,62 @@ export default function DetailScreen({ route }) {
 
   return (
     <View style={styles.container}>
+      {/* 뒤로가기 버튼 */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back-circle" size={32} color="#888" />
+      </TouchableOpacity>
+
       <Text style={styles.date}>{date}</Text>
       <Image
         source={require('../assets/dog.webp')}
         style={styles.img}
       />
       <ScrollView>
-      <Text style={styles.title}>Today Is...</Text>
-      <View style = {styles.WalkingTime}>
-        <Text style={styles.title}>Walking Time</Text>
-        <Text style={styles.title}>2H</Text>
-      </View>
-      <Text style={styles.title}>To Do List</Text>
-      <TextInput
-        returnKeyType="done"
-        onSubmitEditing={addToDo}
-        onChangeText={onChange}
-        value={text}
-        placeholder="Add a To Do"
-        style={styles.input}
-      />
-      <View>
-        {Object.keys(toDos).map((key) => (
-          <View style={styles.toDos} key={key}>
-            <TouchableOpacity
-              onPress={() => toggleDone(key)}
-              style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
-            >
-              <Feather
-                name={toDos[key].done ? 'check-square' : 'square'}
-                size={24}
-                color="black"
-                style={styles.checkBox}
-              />
-              <Text
-                style={[
-                  styles.toDoText,
-                  toDos[key].done && {
-                    textDecorationLine: 'line-through',
-                    color: 'gray',
-                  },
-                ]}
+        <Text style={styles.title}>Today Is...</Text>
+        <View style={styles.WalkingTime}>
+          <Text style={styles.title}>Walking Time</Text>
+          <Text style={styles.title}>2H</Text>
+        </View>
+        <Text style={styles.title}>To Do List</Text>
+        <TextInput
+          returnKeyType="done"
+          onSubmitEditing={addToDo}
+          onChangeText={onChange}
+          value={text}
+          placeholder="Add a To Do"
+          style={styles.input}
+        />
+        <View>
+          {Object.keys(toDos).map((key) => (
+            <View style={styles.toDos} key={key}>
+              <TouchableOpacity
+                onPress={() => toggleDone(key)}
+                style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
               >
-                {toDos[key].text}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => deleteToDo(key)}>
-              <Entypo name="cross" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
+                <Feather
+                  name={toDos[key].done ? 'check-square' : 'square'}
+                  size={24}
+                  color="black"
+                  style={styles.checkBox}
+                />
+                <Text
+                  style={[
+                    styles.toDoText,
+                    toDos[key].done && {
+                      textDecorationLine: 'line-through',
+                      color: 'gray',
+                    },
+                  ]}
+                >
+                  {toDos[key].text}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>
+                <Entypo name="cross" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -127,17 +135,24 @@ const styles = StyleSheet.create({
     flex: 1, 
     padding: 20, 
     backgroundColor: '#f2f2f7' 
-    },
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
   date: { 
     fontSize: 28, 
     fontWeight: 'bold', 
-    marginTop: 50
-    },
+    marginTop: 50,
+    textAlign: 'center'
+  },
   title: { 
     fontSize: 20, 
     fontWeight: '600', 
     marginTop: 20 
-},
+  },
   input: {
     backgroundColor: 'white',
     paddingVertical: 12,
@@ -165,10 +180,10 @@ const styles = StyleSheet.create({
   checkBox: {
     marginRight: 10,
   },
-  img : {
+  img: {
     marginTop: 20,
     width: '100%',
-    height : '30%',
+    height: '30%',
     borderRadius: 10,
   },
   WalkingTime: {
@@ -176,5 +191,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
-    },
+  },
 });
