@@ -41,8 +41,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
     if (weight == null || Number.isNaN(Number(weight))) return "-";
     const w = Number(weight);
     if (unit === "kg") {
-      const lb = (w / 0.453592).toFixed(1);
-      return `${w} kg  (${lb} lb)`;
+      return `${w} kg`;
     } else {
       const kg = (w * 0.453592).toFixed(1);
       return `${w} lb  (${kg} kg)`;

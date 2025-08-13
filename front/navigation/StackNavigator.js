@@ -12,7 +12,8 @@ import SignupScreen from '../screens/SignupScreen';
 import AddDogStep1Screen from '../screens/AddDogStep1Screen';
 import AddDogStep2Screen from '../screens/AddDogStep2Screen'; 
 import AddDogStep3Screen from '../screens/AddDogStep3Screen'; 
-import InviteFamiltScreen from '../screens/InviteFamilyScreen';
+import InviteFamilyScreen from '../screens/InviteFamilyScreen';
+import ChatBotScreen from '../screens/ChatBotScreen'; 
 const Stack= createNativeStackNavigator();
 
 export default function StackNavigator(){
@@ -30,7 +31,8 @@ export default function StackNavigator(){
             <Stack.Screen name='AddDogStep1' component={AddDogStep1Screen} />
             <Stack.Screen name='AddDogStep2' component={AddDogStep2Screen} />
             <Stack.Screen name='AddDogStep3' component={AddDogStep3Screen} />
-            <Stack.Screen name='InviteFamily' component={InviteFamiltScreen} />
+            <Stack.Screen name='InviteFamily' component={InviteFamilyScreen} />
+            <Stack.Screen name='ChatBot' component={ChatBotScreen} />
         </Stack.Navigator>
     )
 }
