@@ -46,10 +46,10 @@ exports.home = function(req, res){
 }
 
 exports.user_register = function(req, res){ //회원가입
-    const {id, password} = req.body;
+    const {id, username, password} = req.body;
     
-    if(!id ||!password){
-        return res.status(400).json({success: false, message: '아이디와 비밀번호를 입력해 주세요.'});
+    if(!id ||!username ||!password){
+        return res.status(400).json({success: false, message: '아이디와 사용자의 이름, 그리고 비밀번호를 입력해 주세요.'});
     }
 
     db.query(`SELECT * FROM users WHERE id=?`,[id],(error, user)=>{
@@ -60,7 +60,7 @@ exports.user_register = function(req, res){ //회원가입
         return res.status(400).json({success: false, message: '이미 존재하는 아이디 입니다.'});
       }
 
-      db.query(`INSERT INTO users(id, password) VALUES(?,?)`,[id, password],(error2, result2)=>{
+      db.query(`INSERT INTO users(id,username, password) VALUES(?,?,?)`,[id,username, password],(error2, result2)=>{
         if(error2){
           return res.status(500).json({success: false, message: '서버 에러'});
         }
@@ -70,8 +70,8 @@ exports.user_register = function(req, res){ //회원가입
 };
 
 exports.user_update= function(req, res){ //사용자 정보 갱신
-  const {new_id, new_password, id} = req.body;
-  db.query(`UPDATE users SET id=?, password=? WHERE id=?`, [new_id, new_password, id], (error, result)=>{
+  const {new_id, new_username, new_password, id} = req.body;
+  db.query(`UPDATE users SET id=?, username=?, password=? WHERE id=?`, [new_id, new_username, new_password, id], (error, result)=>{
     if(error){
       return res.status(500).json({success: false, message: '서버 에러'});
     }

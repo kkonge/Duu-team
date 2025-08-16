@@ -1,6 +1,6 @@
 CREATE TABLE diaries(
     diary_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    id VARCHAR(20) NOT NULL,
+    id VARCHAR(100) NOT NULL,
     title VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -8,7 +8,7 @@ CREATE TABLE diaries(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE diary_photo(
-    id VARCHAR(20) NOT NULL,
+    id VARCHAR(100) NOT NULL,
     diary_id INT NOT NULL,
     photo_path VARCHAR(500) NOT NULL,
     original_name VARCHAR(255) NOT NULL,
