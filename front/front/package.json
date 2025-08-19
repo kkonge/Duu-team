@@ -1,9 +1,4 @@
 {
-<<<<<<< HEAD
-  "dependencies": {
-    "multer": "^2.0.2"
-  }
-=======
   "name": "doggy",
   "version": "1.0.0",
   "main": "index.ts",
@@ -22,14 +17,10 @@
     "expo-app-loading": "^2.1.1",
     "expo-clipboard": "^7.1.5",
     "expo-font": "~13.3.2",
-    "expo-haptics": "~14.1.4",
     "expo-image-picker": "~16.1.4",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.5",
-    "react-native-calendars": "^1.1313.0",
-    "react-native-linear-gradient": "^2.8.3",
-    "expo-linear-gradient": "~14.1.5"
+    "react-native": "0.79.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -37,5 +28,4 @@
     "typescript": "~5.8.3"
   },
   "private": true
->>>>>>> 33406b2f (전체 디자인 수정)
 }
