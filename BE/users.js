@@ -45,12 +45,12 @@ exports.home = function(req, res){
   }
 }
 
-exports.user_register = function(req, res){ //회원가입
+exports.user_register = function(req, res){ //회원가입 한번에 입력 받아서 넣는 방식 
     const {id, username, password} = req.body;
     
     if(!id ||!username ||!password){
         return res.status(400).json({success: false, message: '아이디와 사용자의 이름, 그리고 비밀번호를 입력해 주세요.'});
-    }
+    } 
 
     db.query(`SELECT * FROM users WHERE id=?`,[id],(error, user)=>{
       if(error){
@@ -68,6 +68,36 @@ exports.user_register = function(req, res){ //회원가입
       });
     }); 
 };
+
+exports.registerStart = (req, res) => { //단계별 회원가입 - 이메일, 비밀번호 먼저 저장 
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: '이메일과 비밀번호가 필요합니다.' });
+  }
+  db.query('SELECT * FROM users WHERE id = ?', [email], (err, results) => {
+    if (err) return res.status(500).json({ success: false, message: '서버 에러' });
+    if (results.length > 0) return res.status(400).json({ success: false, message: '이미 존재하는 이메일입니다.' });
+
+    db.query('INSERT INTO users (id, password) VALUES (?, ?)', [email, password], (err2) => {
+      if (err2) return res.status(500).json({ success: false, message: '서버 에러' });
+      return res.json({ success: true, message: '회원가입 1단계 완료' });
+    });
+  });
+}; 
+
+exports.updateRelation = (req, res) => { //단계별 회원가입 - relation 업데이트  
+  const { email, relation } = req.body;
+  if (!email || !relation) {
+    return res.status(400).json({ success: false, message: '이메일과 관계 정보가 필요합니다.' });
+  }
+  db.query('UPDATE users SET relation = ? WHERE id = ?', [relation, email], (err, result) => {
+    if (err) return res.status(500).json({ success: false, message: '서버 에러' });
+    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: '사용자 없음' });
+    return res.json({ success: true, message: '추가 정보 업데이트 완료' });
+  });
+};
+
+
 
 exports.user_update= function(req, res){ //사용자 정보 갱신
   const {new_id, new_username, new_password, id} = req.body;

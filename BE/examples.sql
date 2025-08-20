@@ -4,6 +4,12 @@ CREATE TABLE users (
     password VARCHAR(20) NOT NULL
 );
 
+ALTER TABLE users ADD COLUMN relation VARCHAR(50); 
+'user 가입 떄 강아지와의 관계도 넣기 위해서 추가!'
+
+ALTER TABLE users MODIFY relation VARCHAR(50) NULL; 
+'가입할 때 relation null 허용'
+
 INSERT INTO users (id, username, password) VALUES 
 ('1', 'user1', '1234@'),
 ('2', 'user2', '5678@'),
