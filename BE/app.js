@@ -6,6 +6,7 @@ const usersFunction = require('./users.js');
 const petsFunction = require('./pets.js');
 const multer = require('multer');
 const diary = require('./diary.js');
+const walkFunction = require('./walks.js');
 
 app.use(express.json());
 app.use(cors());
@@ -82,6 +83,9 @@ app.delete('/delete_pet', (req, res)=>{ //강아지 정보 완전 삭제
 // 사용자 정보 조회
 app.get('/user_info', usersFunction.verifyToken, usersFunction.user_info);
 
+app.post('/walks/save', (req, res) => {
+  walkFunction.walk_save(req, res);
+});
 
 app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   if (err instanceof multer.MulterError) {
