@@ -44,3 +44,6 @@ node_modules
 android/.gradle
 ios/Pods
 .DS_Store
+.expo/
+node_modules/
+front/node_modules/

@@ -13,6 +13,20 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
+function CoreTile({ iconSource, label, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.tileUnified,
+        pressed && { transform: [{ scale: 0.96 }] },
+      ]}
+    >
+      <Image source={iconSource} style={styles.tileUnifiedIcon} />
+      <Text style={styles.tileUnifiedLabel}>{label}</Text>
+    </Pressable>
+  );
+}
 /* ---------- 날짜 계산 ----------- */
 function formatToday(d = new Date()) {
   const y = d.getFullYear();
@@ -63,24 +77,19 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#EEF6E9" }}>
-      <View style={styles.blobA} />
-      <View style={styles.blobB} />
-      <View style={styles.blobC} />
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#white" }}>
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-            <Ionicons name="chevron-back" size={22} color="#5B7F6A" />
+            <Ionicons name="chevron-back" size={22} color="#2D5D9F" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Today</Text>
           <TouchableOpacity onPress={() => {}} style={styles.iconBtn}>
-            <Ionicons name="ellipsis-horizontal-circle" size={22} color="#5B7F6A" />
+            <Ionicons name="ellipsis-horizontal-circle" size={22} color="#2D5D9F" />
           </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
-       
           <View style={[styles.heroCard, { marginTop: 6 }]}>
             <View style={styles.heroLeft}>
               <View style={styles.avatarGlow}>
@@ -88,7 +97,7 @@ export default function HomeScreen() {
                   <Image source={{ uri: dog.imageUri }} style={styles.heroAvatar} />
                 ) : (
                   <View style={[styles.heroAvatar, styles.heroPlaceholder]}>
-                    <Ionicons name="paw-outline" size={48} color="#9CB3A1" />
+                    <Ionicons name="paw-outline" size={48} color="#8FB4DA" />
                   </View>
                 )}
                 <View style={styles.starBadge}>
@@ -110,20 +119,33 @@ export default function HomeScreen() {
             </View>
           </View>
 
-         
           <View style={styles.coreGrid}>
-            <CoreTile bg="#EAF4EE" border="#D7E8DB" icon="journal-outline" label="Diary" onPress={() => navigation.navigate("Diary")} />
-            <CoreTile bg="#FFF1F1" border="#FFD9D9" icon="walk-outline" label="Walk" onPress={() => navigation.navigate("Walk")} />
-            <CoreTile bg="#F5F1FF" border="#E0D8FF" icon="medkit-outline" label="Health" onPress={() => navigation.navigate("Health")} />
-            <CoreTile bg="#EAF3FF" border="#D4E6FF" icon="calendar-outline" label="Calendar" onPress={() => navigation.navigate("Calendar")} />
-          </View>
+  <CoreTile
+    iconSource={require("../assets/diary.png")}
+    label="Diary"
+    onPress={() => navigation.navigate("Diary")}
+  />
+  <CoreTile
+    iconSource={require("../assets/walk.png")}
+    label="Walk"
+    onPress={() => navigation.navigate("Walk")}
+  />
+  <CoreTile
+    iconSource={require("../assets/Vector 34.png")}
+    label="Care"
+    onPress={() => navigation.navigate("Care", { selectedDog: dog })}
+  />
+  <CoreTile
+    iconSource={require("../assets/calendar.png")}
+    label="Calendar"
+    onPress={() => navigation.navigate("Calendar")}
+  />
+</View>
 
-     
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Pet Routines</Text>
           </View>
 
-       
           <View style={styles.glass}>
             {routines.length === 0 ? (
               <>
@@ -143,7 +165,7 @@ export default function HomeScreen() {
                   </View>
                 ) : (
                   <TouchableOpacity style={styles.plusBtn} onPress={() => setShowInput(true)}>
-                    <Ionicons name="add-circle-outline" size={28} color="#3F8C74" />
+                    <Ionicons name="add-circle-outline" size={28} color="#2D5D9F" />
                   </TouchableOpacity>
                 )}
               </>
@@ -186,7 +208,7 @@ export default function HomeScreen() {
                   </View>
                 ) : (
                   <TouchableOpacity style={styles.plusBtn} onPress={() => setShowInput(true)}>
-                    <Ionicons name="add-circle-outline" size={28} color="#3F8C74" />
+                    <Ionicons name="add-circle-outline" size={28} color="#2D5D9F" />
                   </TouchableOpacity>
                 )}
               </>
@@ -197,209 +219,286 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
+
       {/* 하단 탭 */}
       <View style={styles.tabBar}>
-        <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("Id")}>
-          <Ionicons name="book-outline" size={22} color="#2f2f2f" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabBtn, styles.tabCenter]}
-          onPress={() => navigation.navigate("Home", { selectedDog: dog })}
-        >
-          <Ionicons name="home" size={24} color="#2f2f2f" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("ChatBot")}>
-          <Ionicons name="chatbubble-ellipses-outline" size={22} color="#2f2f2f" />
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("Id")}>
+    <Image source={require("../assets/ID.png")} style={styles.tabIcon} />
+  </TouchableOpacity>
+  
+  <TouchableOpacity
+    style={[styles.tabBtn, styles.tabCenter]}
+    onPress={() => navigation.navigate("Home", { selectedDog: dog })}
+  >
+    <Image source={require("../assets/home.png")} style={styles.tabIcon} />
+  </TouchableOpacity>
+  
+  <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("ChatBot")}>
+    <Image source={require("../assets/chat bot.png")} style={styles.tabIcon} />
+  </TouchableOpacity>
+</View>
     </SafeAreaView>
   );
 }
 
-function CoreTile({ icon, label, onPress, bg, border }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.tile,
-        { backgroundColor: bg, borderColor: border },
-        pressed && { transform: [{ scale: 0.98 }] },
-      ]}
-    >
-      <View style={styles.tileIconWrap}>
-        <Ionicons name={icon} size={22} color="#3F8C74" />
-      </View>
-      <Text style={styles.tileLabel}>{label}</Text>
-    </Pressable>
-  );
-}
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 18, paddingTop: 8 },
 
-  inputRow: {
+  tabIcon: {
+  width: 42,
+  height: 42,
+  resizeMode: "contain",
+},
+
+  tileUnified: {
+  width: "47%",
+  aspectRatio: 1.05,
+  borderRadius: 20,
+  backgroundColor: "#F0F6FF",
+  paddingVertical: 16,
+  paddingHorizontal: 10,
+  justifyContent: "center",
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+  marginBottom: 12,
+},
+
+tileUnifiedIcon: {
+  width: 40,
+  height: 40,
+  resizeMode: "contain",
+  marginBottom: 10,
+},
+
+tileUnifiedLabel: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#2D5D9F",
+},
+
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    paddingHorizontal: 6,
-  },
-  input: {
-    flex: 1,
-    height: 42,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#E0E8DE",
-    fontSize: 14,
-    color: "#333",
-  },
-  addBtn: {
-    marginLeft: 8,
-    backgroundColor: "#3F8C74",
-    borderRadius: 12,
-    padding: 10,
-  },
-
-  
-  blobA: {
-    position: "absolute", top: -40, left: -60, width: 180, height: 180, borderRadius: 90,
-    backgroundColor: "#C9F0D1", opacity: 0.35,
-  },
-  blobB: {
-    position: "absolute", top: 80, right: -40, width: 140, height: 140, borderRadius: 70,
-    backgroundColor: "#B8E5FF", opacity: 0.28,
-  },
-  blobC: {
-    position: "absolute", bottom: 140, left: -50, width: 120, height: 120, borderRadius: 60,
-    backgroundColor: "#F3E6FF", opacity: 0.26,
-  },
-
-  
-  headerRow: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    marginTop: 6, marginBottom: 6, 
+    justifyContent: "space-between",
+    marginTop: 6,
+    marginBottom: 6,
   },
   iconBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    alignItems: "center", justifyContent: "center",
-    backgroundColor: "#EAF4EE", borderWidth: 1, borderColor: "#D7E8DB",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E6F0FB",
+    borderWidth: 1,
+    borderColor: "#C3DAF1",
   },
-  headerTitle: { fontSize: 20, fontWeight: "900", color: "#5B7F6A" },
+  headerTitle: { fontSize: 20, fontWeight: "900", color: "#000" },
 
-  
   heroCard: {
-    flexDirection: "row",
-    borderRadius: 28,
-    backgroundColor: "#ffffff",
-    borderWidth: 1, borderColor: "#E0E8DE",
-    padding: 18,
-    shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 6,
-    marginBottom: 14,
-  },
+  flexDirection: "row",
+  borderRadius: 24,
+  backgroundColor: "#F9FBFF",
+  borderWidth: 1,
+  borderColor: "#D8E4F1",
+  padding: 18,
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+  marginBottom: 16,
+},
   heroLeft: { justifyContent: "center", marginRight: 14 },
   avatarGlow: {
-    width: 128, height: 128, borderRadius: 64,
-    alignItems: "center", justifyContent: "center",
-    backgroundColor: "#EAF4EE",
-    shadowColor: "#3F8C74", shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 6 },
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E6F0FB",
+    shadowColor: "#2D5D9F",
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 6 },
   },
-  heroAvatar: { width: 118, height: 118, borderRadius: 59, backgroundColor: "#F3F6F2" },
+  heroAvatar: {
+    width: 118,
+    height: 118,
+    borderRadius: 59,
+    backgroundColor: "#F0F4FA",
+  },
   heroPlaceholder: { alignItems: "center", justifyContent: "center" },
   starBadge: {
-    position: "absolute", right: 6, bottom: 6,
-    width: 26, height: 26, borderRadius: 13, backgroundColor: "#3F8C74",
-    alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#fff",
+    position: "absolute",
+    right: 6,
+    bottom: 6,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#2D5D9F",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
   },
 
   heroRight: { flex: 1, justifyContent: "center" },
-  hello: { fontSize: 14, fontWeight: "800", color: "#6B7A6A" },
-  nameLine: { fontSize: 16, color: "#415247", fontWeight: "700", marginTop: 2 },
-  nameAccent: { color: "#3F8C74", fontWeight: "900", fontSize: 20 },
+  hello: { fontSize: 14, fontWeight: "800", color: "#000" },
+  nameLine: { fontSize: 16, color: "#000", fontWeight: "700", marginTop: 2 },
+  nameAccent: { color: "#2D5D9F", fontWeight: "900", fontSize: 20 },
   badgeRow: { flexDirection: "row", gap: 8, marginTop: 10 },
   badge: {
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9999,
-    backgroundColor: "#E4F1E7", borderWidth: 1, borderColor: "#D7E8DB",
-    color: "#3F8C74", fontWeight: "800", fontSize: 12,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 999,
+  backgroundColor: "#D0E3FF",
+  color: "#2D5D9F",
+  fontWeight: "600",
+  fontSize: 11,
+},
+  badgeDim: {
+    backgroundColor: "#F0F4FA",
+    borderColor: "#D8E4F1",
+    color: "#607D9E",
   },
-  badgeDim: { backgroundColor: "#F3F6F2", borderColor: "#E0E8DE", color: "#5B6C5A" },
-
 
   coreGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 12,
-    marginBottom: 6,
-  },
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+  gap: 12,
+
+},
   tile: {
-    width: "48%",
+    width: "46%",
     aspectRatio: 1.05,
-    borderRadius: 20,
-    
-    padding: 14,
-    shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 5,
+    borderRadius: 16,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  tileIconWrap: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: "#FFFFFF", 
-    borderWidth: 1, borderColor: "#E0E8DE",
-    alignItems: "center", justifyContent: "center",
-  },
-  tileLabel: { fontSize: 18, fontWeight: "900", color: "#415247" },
 
+  tileLabel: { fontSize: 18, fontWeight: "900", color: "#3A4E6B" },
 
-  sectionHeader: {
-    marginTop: 12, marginBottom: 8,
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    sectionHeader: {
+    marginTop: -50,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  sectionTitle: { color: "#415247", fontWeight: "900", fontSize: 16 },
-  link: { color: "#2F7FFF", fontWeight: "800", fontSize: 12 },
+  sectionTitle: {
+    color: "#2D5D9F",
+    fontWeight: "900",
+    fontSize: 20,
+  },
+  link: {
+    color: "#3F8CFF",
+    fontWeight: "800",
+    fontSize: 12,
+  },
   glass: {
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.92)",
-    borderWidth: 1, borderColor: "#E0E8DE",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderWidth: 1,
+    borderColor: "#DCEAF5",
     padding: 14,
-    shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 10 }, elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
   routineRow: {
-    flexDirection: "row", alignItems: "center", gap: 10,
-    paddingVertical: 10, borderBottomWidth: 1, borderColor: "#EFF4EF",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#E7F0FA",
   },
   checkDot: {
-    width: 20, height: 20, borderRadius: 10,
-    borderWidth: 2, borderColor: "#CFE2CF", alignItems: "center", justifyContent: "center",
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#BDD9F2",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#fff",
   },
-  checkDotOn: { backgroundColor: "#3F8C74", borderColor: "#3F8C74" },
-  routineTxt: { color: "#415247", fontWeight: "700" },
-
-  dateTxt: { textAlign: "center", marginTop: 14, color: "#6B7A6A", fontWeight: "700", fontSize: 12 },
+  checkDotOn: {
+    backgroundColor: "#3F8CFF",
+    borderColor: "#3F8CFF",
+  },
+  routineTxt: {
+    color: "#2D3F55",
+    fontWeight: "700",
+  },
+  dateTxt: {
+    textAlign: "center",
+    marginTop: 14,
+    color: "#6B84A6",
+    fontWeight: "700",
+    fontSize: 12,
+  },
 
   /* 탭바 */
   tabBar: {
-    position: "absolute", left: 16, right: 16, bottom: 20,
-    height: 64, backgroundColor: "#BFEFC7",
+    marginBottom: 10,
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 20,
+    height: 64,
+    backgroundColor: "#D7EAFE",
     borderRadius: 28,
-    flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-    shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
-  tabBtn: { width: 54, height: 54, borderRadius: 27, alignItems: "center", justifyContent: "center" },
-  tabCenter: { width: 60, height: 60, borderRadius: 30, backgroundColor: "rgba(255,255,255,0.65)" },
+  tabBtn: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabCenter: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "rgba(255,255,255,0.7)",
+  },
 
   emptyText: {
-  textAlign: "center",
-  color: "#93A39A",
-  fontWeight: "700",
-  fontSize: 14,
-  marginBottom: 12,
-},
-plusBtn: {
-  alignSelf: "center",
-  marginTop: 4,
-},
+    textAlign: "center",
+    color: "#98AFCB",
+    fontWeight: "700",
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  plusBtn: {
+    alignSelf: "center",
+    marginTop: 6,
+  },
 
   inputRow: {
     flexDirection: "row",
@@ -413,24 +512,14 @@ plusBtn: {
     borderRadius: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: "#E0E8DE",
+    borderColor: "#D1E2F4",
     fontSize: 14,
-    color: "#333",
+    color: "#1C2B36",
   },
   addBtn: {
     marginLeft: 8,
-    backgroundColor: "#3F8C74",
+    backgroundColor: "#3F8CFF",
     borderRadius: 12,
     padding: 10,
-  },
-  plusBtn: {
-    alignSelf: "center",
-    marginTop: 6,
-  },
-  emptyText: {
-    color: "#93A39A",
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 10,
   },
 });

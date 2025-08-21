@@ -8,7 +8,6 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
-
 function makeCode(seed) {
   const base = (seed || Date.now()).toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "");
   return (base + "DOGGY").slice(0, 6); 
@@ -18,7 +17,6 @@ export default function InviteFamilyScreen() {
   const route = useRoute();
   const navigation = useNavigation();
 
- 
   const myInviteCode = useMemo(() => route.params?.myInviteCode || makeCode(), [route.params]);
 
   const onCopyMyCode = async () => {
@@ -37,15 +35,13 @@ export default function InviteFamilyScreen() {
       <View style={styles.container}>
   
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back-circle" size={32} color="#7B8A7A" />
+          <Ionicons name="arrow-back-circle" size={32} color="#2D5D9F" />
         </TouchableOpacity>
-
 
         <View style={styles.header}>
           <Text style={styles.title}>Invite Family</Text>
           <Text style={styles.subtitle}>내 초대코드를 공유해서 가족을 초대하세요</Text>
         </View>
-
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>내 초대코드</Text>
@@ -55,11 +51,11 @@ export default function InviteFamilyScreen() {
 
             <View style={styles.myCodeBtns}>
               <Pressable onPress={onCopyMyCode} style={({ pressed }) => [styles.secBtn, pressed && styles.pressed]}>
-                <Ionicons name="copy-outline" size={16} color="#5B6C5A" />
+                <Ionicons name="copy-outline" size={16} color="#2D5D9F" />
                 <Text style={styles.secBtnTxt}>Copy</Text>
               </Pressable>
               <Pressable onPress={onShareMyCode} style={({ pressed }) => [styles.secBtn, pressed && styles.pressed]}>
-                <Ionicons name="share-social-outline" size={16} color="#5B6C5A" />
+                <Ionicons name="share-social-outline" size={16} color="#2D5D9F" />
                 <Text style={styles.secBtnTxt}>Share</Text>
               </Pressable>
             </View>
@@ -78,12 +74,12 @@ export default function InviteFamilyScreen() {
 const CARD_BG = "#fff";
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EEF6E9", paddingHorizontal: 16, paddingTop: 8 },
+  container: { flex: 1, backgroundColor: "#EAF2FB", paddingHorizontal: 16, paddingTop: 8 },
   backButton: { position: "absolute", top: 10, left: 12, zIndex: 10 },
 
   header: { alignItems: "center", paddingTop: 38, paddingBottom: 8 },
-  title: { fontSize: 22, fontWeight: "800", color: "#5B7F6A" },
-  subtitle: { marginTop: 2, color: "#6B7A6A", fontSize: 13, textAlign: "center" },
+  title: { fontSize: 22, fontWeight: "800", color: "#2D5D9F" },
+  subtitle: { marginTop: 2, color: "#4F6D99", fontSize: 13, textAlign: "center" },
 
   card: {
     marginTop: 12,
@@ -97,16 +93,16 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
 
-  sectionTitle: { color: "#415247", fontWeight: "800", marginBottom: 10 },
+  sectionTitle: { color: "#1B3C78", fontWeight: "800", marginBottom: 10 },
 
   myCodeBox: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#E0E8DE",
-    backgroundColor: "#F7FBF8",
+    borderColor: "#C6D9F2",
+    backgroundColor: "#F0F6FF",
     padding: 14,
   },
-  myCode: { fontSize: 28, fontWeight: "900", color: "#415247", letterSpacing: 2, textAlign: "center" },
+  myCode: { fontSize: 28, fontWeight: "900", color: "#1B3C78", letterSpacing: 2, textAlign: "center" },
 
   myCodeBtns: {
     marginTop: 12,
@@ -119,15 +115,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E0E8DE",
-    backgroundColor: "#F3F6F2",
+    borderColor: "#C6D9F2",
+    backgroundColor: "#E5F0FB",
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
-  secBtnTxt: { color: "#5B6C5A", fontWeight: "700" },
+  secBtnTxt: { color: "#2D5D9F", fontWeight: "700" },
 
-  helperText: { marginTop: 10, color: "#6B7A6A", fontSize: 12, textAlign: "center", lineHeight: 18 },
+  helperText: { marginTop: 10, color: "#4F6D99", fontSize: 12, textAlign: "center", lineHeight: 18 },
 
   pressed: { transform: [{ scale: 0.99 }] },
 });

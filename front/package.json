@@ -1,9 +1,4 @@
 {
-<<<<<<< HEAD
-  "dependencies": {
-    "multer": "^2.0.2"
-  }
-=======
   "name": "doggy",
   "version": "1.0.0",
   "main": "index.ts",
@@ -37,5 +32,4 @@
     "typescript": "~5.8.3"
   },
   "private": true
->>>>>>> 33406b2f (전체 디자인 수정)
 }
