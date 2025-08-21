@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 33406b2fb5df9cd774c716e2f3993aa59344ccb5 정여은 <jeong-yeoeun@jeong-yeoeun-ui-MacBookAir.local> 1755589156 +0900	commit (initial): 전체 디자인 수정
+33406b2fb5df9cd774c716e2f3993aa59344ccb5 77ea70ddec7e4c2cb1059cebbdd2ddaa398ccef1 정여은 <jeong-yeoeun@jeong-yeoeun-ui-MacBookAir.local> 1755757269 +0900	reset: moving to origin/main
+77ea70ddec7e4c2cb1059cebbdd2ddaa398ccef1 d3f5228264d447d308e4d45b4dad66939c0c81a9 정여은 <jeong-yeoeun@jeong-yeoeun-ui-MacBookAir.local> 1755757452 +0900	commit (merge): Resolve merge: take package files from feature/blue-theme
+d3f5228264d447d308e4d45b4dad66939c0c81a9 5faf5b4090b1329a2114b89b5fcef523f78f56d6 정여은 <jeong-yeoeun@jeong-yeoeun-ui-MacBookAir.local> 1755757614 +0900	revert: Revert "Resolve merge: take package files from feature/blue-theme"
+5faf5b4090b1329a2114b89b5fcef523f78f56d6 77ea70ddec7e4c2cb1059cebbdd2ddaa398ccef1 정여은 <jeong-yeoeun@jeong-yeoeun-ui-MacBookAir.local> 1755757954 +0900	reset: moving to 77ea70dd
