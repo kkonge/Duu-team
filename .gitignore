@@ -47,3 +47,4 @@ ios/Pods
 .expo/
 node_modules/
 front/node_modules/
+front/.git_nested_backup/
