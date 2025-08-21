@@ -4,21 +4,21 @@ import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 export default function LoginSignupScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      {/* 상단 로고 및 소개 */}
+
       <View style={styles.header}>
         <Text style={styles.logo}>MUNG LOG</Text>
         <Text style={styles.tagline}>Daily Care For Your Dog</Text>
 
-        {/* 로고 이미지 삽입 */}
+        
         <Image
-          source={require('../assets/logo.png')} // ← 경로 확인!
+          source={require('../assets/logo.png')} 
           style={styles.logoImage}
           resizeMode="contain"
         />
       </View>
       
 
-      {/* 로그인 / 회원가입 버튼 */}
+
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.loginBtn} onPress={() => navigation.navigate('Login')}>
           <Text style={styles.loginText}>로그인</Text>

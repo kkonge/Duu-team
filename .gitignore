@@ -43,3 +43,8 @@ node_modules
 *.log
 android/.gradle
 ios/Pods
+.DS_Store
+.expo/
+node_modules/
+front/node_modules/
+front/.git_nested_backup/

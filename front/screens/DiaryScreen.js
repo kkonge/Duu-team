@@ -9,9 +9,6 @@ import {
   FlatList,
   ActivityIndicator,
   Dimensions,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -103,10 +100,10 @@ export default function DiaryScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF6E9' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#EAF2FB' }}>
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color="#5B7F6A" />
+          <Ionicons name="chevron-back" size={22} color="#2D5D9F" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Diary</Text>
         <View style={styles.iconBtn} />
@@ -135,84 +132,33 @@ export default function DiaryScreen({ navigation }) {
 const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 18, paddingTop: 8, paddingBottom: 6, backgroundColor: '#EEF6E9',
+    paddingHorizontal: 18, paddingTop: 8, paddingBottom: 6, backgroundColor: '#EAF2FB',
   },
   iconBtn: {
     width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#EAF4EE', borderWidth: 1, borderColor: '#D7E8DB',
+    backgroundColor: '#E6F0FB', borderWidth: 1, borderColor: '#C3DAF1',
   },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#5B7F6A' },
+  headerTitle: { fontSize: 25, fontWeight: '900', color: '#2D5D9F' },
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
-  title: { fontSize: 30, fontWeight: '600', marginBottom: 12 },
+  title: { fontSize: 25, fontWeight: '700', marginBottom: 12, color: '#1D3557' },
   tabHeader: {
-    flexDirection: 'row', backgroundColor: '#DCE9DD', borderRadius: 16, padding: 6, marginBottom: 16,
+    flexDirection: 'row', backgroundColor: '#DCE9F7', borderRadius: 16, padding: 6, marginBottom: 16,
   },
   tabButton: {
     flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12,
   },
   tabText: {
-    fontSize: 16, fontWeight: '600', color: '#93A39A',
+    fontSize: 16, fontWeight: '600', color: '#5A7698',
   },
   tabSelected: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
   },
   tabTextSelected: {
-    color: '#2B4A3C',
-  },
-  diaryContainer: {
-    flex: 1, gap: 16,
-  },
-  sectionLabel: {
-    fontSize: 16, fontWeight: '700', color: '#415247', marginBottom: 6,
-  },
-  diaryText: {
-    flex: 1, fontSize: 16, backgroundColor: '#fff', borderRadius: 12,
-    padding: 14, borderWidth: 1, borderColor: '#E0E8DE', minHeight: 300,
-  },
-  saveBtn: {
-    backgroundColor: '#5B7F6A', paddingVertical: 12, borderRadius: 10,
-    alignItems: 'center', marginTop: 10,
-  },
-  saveBtnText: {
-    color: '#fff', fontSize: 16, fontWeight: '700',
+    color: '#2D5D9F',
   },
   galleryContainer: { flex: 1 },
   photo: { width: imageSize, height: imageSize, backgroundColor: '#eee' },
   center: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
-  },
-  imageContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 12,
-  },
-  imageWrapper: {
-    position: 'relative',
-    width: 90,
-    height: 90,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
-  },
-  deleteIcon: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: 'white',
-    borderRadius: 10,
-  },
-  addImageBtn: {
-    marginTop: 16,
-    padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: '#EAF4EE',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#D7E8DB',
   },
 });
