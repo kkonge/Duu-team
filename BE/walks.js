@@ -27,7 +27,7 @@ exports.walk_save = function(req, res){
 
         const walk_id = result.insertId;
 
-        // 2. walk_routes 테이블에 산책 경로 좌표들 저장
+        // 2. walk_routes 테이블에 산책 경로 좌표들 저장(list 형태로 저장)
         const routes = route.map(pt => [
           walk_id,
           pt.lat,

@@ -7,6 +7,7 @@ const petsFunction = require('./pets.js');
 const multer = require('multer');
 const diary = require('./diary.js');
 const walkFunction = require('./walks.js');
+const FamilyFunction= require('./family.js');
 
 app.use(express.json());
 app.use(cors());
@@ -86,6 +87,17 @@ app.get('/user_info', usersFunction.verifyToken, usersFunction.user_info);
 app.post('/walks/save', (req, res) => {
   walkFunction.walk_save(req, res);
 });
+
+//초대 코드 생성 
+app.post('/family_invite', async (req, res) => {
+  FamilyFunction.family_invite(req, res);
+});
+
+// 초대 코드 입력 후 가족 가입
+app.post('family_join', async (req, res) => {
+  FamilyFunction.family_join(req, res);
+});
+
 
 app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   if (err instanceof multer.MulterError) {

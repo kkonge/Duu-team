@@ -85,6 +85,25 @@ exports.registerStart = (req, res) => { //단계별 회원가입 - 이메일, �
   });
 }; 
 
+exports.user_profile = function(req, res){
+  const {username, Nickname, DateOfBirth, email} = req.body;
+
+  if(!username || !DateOfBirth || !Nickname){
+    return res.status(400).json({ success: false, message: '사용자 이름과 별명 그리고 생년월일이 필요합니다.'});
+  }
+  db.query('SELECT * FROM users WHERE id = ?', [email], (err, results) => {
+    if (err) return res.status(500).json({ success: false, message: '서버 에러' });
+
+    db.query('INSERT INTO users (username,Nickname ,birth_date) VALUES (?, ?, ?)', [username, Nickname, DateOfBirth], (err2) => {
+      if (err2) {
+        return res.status(500).json({ success: false, message: '서버 에러' });
+      }
+      return res.json({ success: true, message: '회원가입 2단계 완료' });
+    });
+  });
+
+};
+
 exports.updateRelation = (req, res) => { //단계별 회원가입 - relation 업데이트  
   const { email, relation } = req.body;
   if (!email || !relation) {
