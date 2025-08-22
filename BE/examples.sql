@@ -4,6 +4,22 @@ CREATE TABLE users (
     password VARCHAR(20) NOT NULL
 );
 
+ALTER TABLE users ADD COLUMN Nickname VARCHAR(50); 
+
+ALTER TABLE users ADD birth_date DATE NOT NULL;
+
+ALTER TABLE users ADD family_id INT NOT NULL DEFAULT;
+
+--> table 이렇게 됨 
+CREATE TABLE users (
+    id VARCHAR(100) NOT NULL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(20) NOT NULL,
+    Nickname VARCHAR(50) NOT NULL, 
+    birth_date DATE NOT NULL,
+    family_id INT NOT NULL,
+);
+
 INSERT INTO users (id, username, password) VALUES 
 ('1', 'user1', '1234@'),
 ('2', 'user2', '5678@'),
