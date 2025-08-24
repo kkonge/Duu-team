@@ -10,14 +10,18 @@ ALTER TABLE users ADD birth_date DATE NOT NULL;
 
 ALTER TABLE users ADD family_id INT NOT NULL DEFAULT;
 
+ALTER TABLE users
+ADD COLUMN refresh_token VARCHAR(500) DEFAULT NULL;
+
 --> table 이렇게 됨 
 CREATE TABLE users (
     id VARCHAR(100) NOT NULL PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
-    password VARCHAR(20) NOT NULL,
+    password VARCHAR(100) NOT NULL,
     Nickname VARCHAR(50) NOT NULL, 
     birth_date DATE NOT NULL,
     family_id INT NOT NULL,
+    refresh_token VARCHAR(500) DEFAULT NULL
 );
 
 INSERT INTO users (id, username, password) VALUES 
