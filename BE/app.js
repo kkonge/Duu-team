@@ -5,7 +5,7 @@ const cors = require('cors');
 const usersFunction = require('./users.js');
 const petsFunction = require('./pets.js');
 const multer = require('multer');
-const diary = require('./diary.js');
+const diaryFunction = require('./diary.js');
 const walkFunction = require('./walks.js');
 const FamilyFunction= require('./family.js');
 
@@ -21,7 +21,7 @@ const storage = multer.diskStorage({  //storage 선언
   }
 }); 
 
-app.use('/user', express.static('uploads'));
+//app.use('/user', express.static('uploads'));
 app.use('/uploads', express.static('uploads'));
 
 
@@ -33,20 +33,23 @@ const upload = multer({   //미들웨어
 app.set('views', './views_file');
 app.set('view engine', 'html');
 
-//-----------------------------------------------------------------------
+//--------------------------------------------------------------------------- 
 
 app.get('/', (req, res) => {    //임시 이미지 업로드 보는용 코드
   res.sendFile(__dirname + '/views_file/upload.html');
 });
 
-app.post('/diary/upload', upload.array('photos', 5), (req, res) => {  //일기 업로드
-  diary.diary_upload(req, res);
+app.post('/diary/upload', usersFunction.verifyToken, upload.array('photos', 5), (req, res) => {  //일기 업로드
+  diaryFunction.diary_upload(req, res);
 });
 
 app.get('/diary_photo', usersFunction.verifyToken, (req, res) => { //갤러리에서 보이는 사진 경로 가져오기
-  diary.diary_photo(req, res);
+  diaryFunction.diary_photo(req, res);
 });
 
+app.get('/diaryFirstPhotos', usersFunction.verifyToken, (req, res)=>{  //diary 페이지에서 날짜 별로 사진 한장 보이도록 사진 날짜별로 한장씩 배열로 담아서 반환 
+  diaryFunction.diaryFirstPhotos(req, res);
+});
 
 app.get('/home', (req, res)=>{      //홈화면 어떻게 할지 프론트 팀이랑 상의
   usersFunction.home(req, res);
