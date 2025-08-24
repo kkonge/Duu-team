@@ -122,7 +122,6 @@ exports.diaryFirstPhotos = function(req, res){  //일기 페이지에서 날짜 
                 console.error(error);
                 return res.status(500).json({ message: 'DB 오류' });
             }
-
             // 날짜별 그룹핑용 객체
             const groupedByDate = {};
 

@@ -11,22 +11,22 @@ const SECRET_REFRESH_KEY ='duu_secret_refresh_key';
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
-exports.verifyToken = function(req, res, next) { // 토큰 검증 미들웨어
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// exports.verifyToken = function(req, res, next) { // 토큰 검증 미들웨어
+//   const authHeader = req.headers['authorization'];
+//   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: '토큰이 없습니다.' });
-  }
+//   if (!token) {
+//     return res.status(401).json({ success: false, message: '토큰이 없습니다.' });
+//   }
 
-  jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) {
-      return res.status(403).json({ success: false, message: '유효하지 않은 토큰입니다.' });
-    }
-    req.user = user;
-    next();
-  });
-}
+//   jwt.verify(token, SECRET_KEY, (err, user) => {
+//     if (err) {
+//       return res.status(403).json({ success: false, message: '유효하지 않은 토큰입니다.' });
+//     }
+//     req.user = user;
+//     next();
+//   });
+// }
 
 exports.verifyToken = function(req, res, next) { // 토큰 검증 미들웨어 & 토큰 만기 시 refreshtoken으로 새 accesstoken 발급  
   const authHeader = req.headers['authorization'];
@@ -104,29 +104,29 @@ exports.home = function(req, res){
   }
 }
 
-exports.user_register = function(req, res){ //회원가입 한번에 입력 받아서 넣는 방식 
-    const {id, username, password} = req.body;
+// exports.user_register = function(req, res){ //회원가입 한번에 입력 받아서 넣는 방식 
+//     const {id, username, password} = req.body;
     
-    if(!id ||!username ||!password){
-        return res.status(400).json({success: false, message: '아이디와 사용자의 이름, 그리고 비밀번호를 입력해 주세요.'});
-    } 
+//     if(!id ||!username ||!password){
+//         return res.status(400).json({success: false, message: '아이디와 사용자의 이름, 그리고 비밀번호를 입력해 주세요.'});
+//     } 
 
-    db.query(`SELECT * FROM users WHERE id=?`,[id],(error, user)=>{
-      if(error){
-        return res.status(500).json({success: false, message: '서버 에러'});
-      }
-      if(user.length >0){
-        return res.status(400).json({success: false, message: '이미 존재하는 아이디 입니다.'});
-      }
+//     db.query(`SELECT * FROM users WHERE id=?`,[id],(error, user)=>{
+//       if(error){
+//         return res.status(500).json({success: false, message: '서버 에러'});
+//       }
+//       if(user.length >0){
+//         return res.status(400).json({success: false, message: '이미 존재하는 아이디 입니다.'});
+//       }
 
-      db.query(`INSERT INTO users(id,username, password) VALUES(?,?,?)`,[id,username, password],(error2, result2)=>{
-        if(error2){
-          return res.status(500).json({success: false, message: '서버 에러'});
-        }
-        return res.json({success: true, message:'회원가입에 성공하였습니다.'});
-      });
-    }); 
-};
+//       db.query(`INSERT INTO users(id,username, password) VALUES(?,?,?)`,[id,username, password],(error2, result2)=>{
+//         if(error2){
+//           return res.status(500).json({success: false, message: '서버 에러'});
+//         }
+//         return res.json({success: true, message:'회원가입에 성공하였습니다.'});
+//       });
+//     }); 
+// };
 
 exports.registerStart = (req, res) => { //단계별 회원가입 - 이메일, 비밀번호 먼저 저장 
   const { email, password } = req.body;
@@ -144,37 +144,23 @@ exports.registerStart = (req, res) => { //단계별 회원가입 - 이메일, �
   });
 }; 
 
-exports.user_profile = function(req, res){
+exports.user_profile = function(req, res){ //회원가입할 때 프로필 작성 
   const {username, Nickname, DateOfBirth, email} = req.body;
 
-  if(!username || !DateOfBirth || !Nickname){
+  if(!username || !DateOfBirth || !Nickname || !email){
     return res.status(400).json({ success: false, message: '사용자 이름과 별명 그리고 생년월일이 필요합니다.'});
   }
   db.query('SELECT * FROM users WHERE id = ?', [email], (err, results) => {
     if (err) return res.status(500).json({ success: false, message: '서버 에러' });
 
-    db.query('INSERT INTO users (username,Nickname ,birth_date) VALUES (?, ?, ?)', [username, Nickname, DateOfBirth], (err2) => {
+    db.query('UPDATE users SET username=?, Nickname=?, birth_date=? WHERE id=?', [username, Nickname, DateOfBirth, email], (err2) => {
       if (err2) {
         return res.status(500).json({ success: false, message: '서버 에러' });
       }
-      return res.json({ success: true, message: '회원가입 2단계 완료' });
+      return res.json({ success: true, message: '회원가입 2단계 완료'});
     });
   });
-
 };
-
-exports.updateRelation = (req, res) => { //단계별 회원가입 - relation 업데이트  
-  const { email, relation } = req.body;
-  if (!email || !relation) {
-    return res.status(400).json({ success: false, message: '이메일과 관계 정보가 필요합니다.' });
-  }
-  db.query('UPDATE users SET relation = ? WHERE id = ?', [relation, email], (err, result) => {
-    if (err) return res.status(500).json({ success: false, message: '서버 에러' });
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: '사용자 없음' });
-    return res.json({ success: true, message: '추가 정보 업데이트 완료' });
-  });
-};
-
 
 
 exports.user_update= function(req, res){ //사용자 정보 갱신
