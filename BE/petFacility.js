@@ -9,7 +9,7 @@ exports.pet_facility = function(req, res) {
     let api = async () => {
         let response = null;
         try {
-            response = await axios.get("https://apis.data.go.kr/B551011/KorPetTourService/areaBasedList", {
+            response = await axios.get("http://apis.data.go.kr/B551011/KorPetTourService/areaBasedList", {
                 params: {
                     "ServiceKey": "WayDWc5UdijdBLRXZaVNSeY+TyLIE8gDtDjLMm70Vjt5Kiz3XJ6o9NLm04QDSd9iWu1v8tO2gvb/pwE3NXl3pw==",
                     "MobileOS": "ETC",

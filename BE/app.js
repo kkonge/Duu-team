@@ -10,6 +10,7 @@ const walkFunction = require('./walks.js');
 const FamilyFunction= require('./family.js');
 const animalHospital = require('./animalHospital.js');
 const petFacility = require('./petFacility.js');
+const trashBin = require('./trashbin.js');
 
 app.use(express.json());
 app.use(cors());
@@ -127,6 +128,11 @@ app.post('family_join', async (req, res) => {
 app.get("/pet_facility_list", (req, res) => {
     petFacility.pet_facility(req, res);
 });
+
+app.get('/trashbin', async (req, res) => {
+    trashBin.trashbin(req, res);
+});
+
 
 app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   if (err instanceof multer.MulterError) {
