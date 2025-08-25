@@ -8,9 +8,11 @@ const multer = require('multer');
 const diaryFunction = require('./diary.js');
 const walkFunction = require('./walks.js');
 const FamilyFunction= require('./family.js');
+const animalHospital = require('./animalHospital.js');
 
 app.use(express.json());
 app.use(cors());
+app.use('/animal-hospitals', animalHospital);
 
 const storage = multer.diskStorage({  //storage 선언 
   destination: function(req, file, cb){
@@ -120,7 +122,6 @@ app.post('/family_invite', async (req, res) => {
 app.post('family_join', async (req, res) => {
   FamilyFunction.family_join(req, res);
 });
-
 
 app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   if (err instanceof multer.MulterError) {
