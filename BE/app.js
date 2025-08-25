@@ -9,10 +9,11 @@ const diaryFunction = require('./diary.js');
 const walkFunction = require('./walks.js');
 const FamilyFunction= require('./family.js');
 const animalHospital = require('./animalHospital.js');
+const petFacility = require('./petFacility.js');
 
 app.use(express.json());
 app.use(cors());
-app.use('/animal-hospitals', animalHospital);
+app.use('/animal-hospitals', animalHospital); // 동물 병원 api 활용 
 
 const storage = multer.diskStorage({  //storage 선언 
   destination: function(req, file, cb){
@@ -121,6 +122,10 @@ app.post('/family_invite', async (req, res) => {
 // 초대 코드 입력 후 가족 가입
 app.post('family_join', async (req, res) => {
   FamilyFunction.family_join(req, res);
+});
+
+app.get("/pet_facility_list", (req, res) => {
+    petFacility.pet_facility(req, res);
 });
 
 app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
