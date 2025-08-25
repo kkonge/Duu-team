@@ -55,12 +55,32 @@ app.get('/home', (req, res)=>{      //홈화면 어떻게 할지 프론트 팀�
   usersFunction.home(req, res);
 });
 
-app.post('/user_register', (req, res)=>{  //사용자 등록
+app.post('/user_register', (req, res)=>{  //사용자 등록 한번에 다 하는 버전 
   usersFunction.user_register(req, res);
 });
 
-app.post('/pet_register', (req, res)=>{  //강아지 등록 
+app.post('/registerStart', (req, res)=>{ //단계별 회원가입 - 이메일, 비밀번호 먼저 저장 
+  usersFunction.registerStart(req, res);
+});
+
+app.post('/user_profile', (req, res)=>{ //단계별 회원가입 - 사용자 프로필 저장 
+  usersFunction.user_profile(req, res);
+});
+
+app.post('/pet_register', (req, res)=>{  //강아지 등록 한번에 다 하는 버전(사진 저장 제외)
   petsFunction.pet_register(req, res)
+});
+
+app.post('/pet_register_profile', (req, res)=>{  //단계별 강아지 추가 - 강아지 프로필 사진 저장 
+  petsFunction.pet_register_profile(req, res)
+});
+
+app.post('/pet_register_step2', (req, res)=>{  //단계별 강아지 추가 - 강아지 기본 정보 저장  
+  petsFunction.pet_register_step2(req, res)
+});
+
+app.post('/pet_register_end', (req, res)=>{  //단계별 강아지 추가 - 강아지 추가 정보(중성화 여부, 몸무게)
+  petsFunction.pet_register_end(req, res)
 });
 
 app.post('/login', (req, res)=>{ //사용자 로그인
