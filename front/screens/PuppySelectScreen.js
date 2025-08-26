@@ -1,11 +1,19 @@
 import React, { useMemo } from "react";
 import {
-  View, Text, StyleSheet, TouchableOpacity, Image,
-  SafeAreaView, FlatList, Pressable, ScrollView
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  FlatList,
+  Pressable,
+  ScrollView,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
+/* --------- Utils --------- */
 function getAgeLabel(birth) {
   if (!birth) return "-";
   const d = new Date(birth);
@@ -26,6 +34,7 @@ function getAgeLabel(birth) {
   return `${years}y ${months}m`;
 }
 
+/* --------- Screen --------- */
 export default function PuppySelectScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -45,91 +54,120 @@ export default function PuppySelectScreen() {
     return (
       <Pressable
         onPress={() => navigation.navigate("Home", { selectedDog: item })}
-        style={({ pressed }) => [styles.bannerCard, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       >
-        <View style={styles.thumbSquare}>
+        <View style={styles.thumb}>
           {uri ? (
             <Image source={{ uri }} style={styles.thumbImg} />
           ) : (
-            <View style={[styles.thumbImg, styles.imagePlaceholder]}>
-              <Ionicons name="paw-outline" size={28} color="#9AB4D0" />
+            <View style={[styles.thumbImg, styles.thumbPlaceholder]}>
+              <Ionicons name="paw-outline" size={28} color="#9CA3AF" />
             </View>
           )}
         </View>
 
-        <View style={styles.infoCol}>
+        <View style={styles.cardBody}>
           <Text numberOfLines={1} style={styles.dogName}>{name}</Text>
           <View style={styles.metaRow}>
-            <Text style={styles.metaItem}>{ageLabel}</Text>
-            {breed ? <Text style={[styles.metaItem, styles.metaDim]}> • {breed}</Text> : null}
+            <Text style={styles.metaText}>{ageLabel}</Text>
+            {breed ? <Text style={styles.metaDim}> • {breed}</Text> : null}
           </View>
         </View>
+
+        <Ionicons name="chevron-forward" size={20} color="#9AA4AF" />
       </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back-circle" size={32} color="#2D5D9F" />
+        {/* Top Controls: Back (left) & Add (right) — 다른 화면과 동일한 위치 */}
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
+        <Pressable
+          onPress={() => navigation.navigate("AddDogStep1", route.params || {})}
+          style={({ pressed }) => [styles.addBtn, pressed && { transform: [{ scale: 0.98 }] }]}
+        >
+          <Ionicons name="add" size={18} color="#fff" />
+          <Text style={styles.addTxt}>Add</Text>
+        </Pressable>
 
+        {/* 헤더 */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Your Family</Text>
-            <Text style={styles.subtitle}>
-              {dogs.length > 0 ? `${dogs.length} dog${dogs.length > 1 ? "s" : ""} in your family` : "아직 등록된 강아지가 없어요"}
-            </Text>
-          </View>
-          <Pressable
-            onPress={() => navigation.navigate("AddDogStep1", route.params || {})}
-            style={({ pressed }) => [styles.headerAdd, pressed && styles.pressed]}
-          >
-            <Ionicons name="add" size={18} color="#2D5D9F" />
-            <Text style={styles.headerAddTxt}>Add</Text>
-          </Pressable>
+          <Text style={styles.title}>Your Family</Text>
+          <Text style={styles.subtitle}>
+            {dogs.length > 0
+              ? `${dogs.length} dog${dogs.length > 1 ? "s" : ""} in your family`
+              : "아직 등록된 강아지가 없어요"}
+          </Text>
         </View>
 
+        {/* 목록 / Empty */}
         {dogs.length > 0 ? (
           <FlatList
             data={data}
             keyExtractor={(item, idx) => String(item.id || idx)}
             renderItem={renderItem}
-            contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
+            contentContainerStyle={{ paddingBottom: 140 }}  // 하단 스트립과 여백 확보
             ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
             showsVerticalScrollIndicator={false}
           />
         ) : (
-          <View style={[styles.emptyWrap, { paddingBottom: 120 }]}>
-            <Ionicons name="paw-outline" size={28} color="#2D5D9F" />
-            <Text style={styles.emptyText}>상단 우측 “Add”로 강아지 프로필을 추가하세요</Text>
+          <View style={[styles.emptyWrap, { paddingBottom: 140 }]}>
+            <View style={styles.emptyIconWrap}>
+              <Ionicons name="paw-outline" size={28} color="#9AA4AF" />
+            </View>
+            <Text style={styles.emptyTitle}>No dogs yet</Text>
+            <Text style={styles.emptyText}>우측 상단 Add 버튼으로 강아지 프로필을 추가해 보세요.</Text>
+            <Pressable
+              onPress={() => navigation.navigate("AddDogStep1", route.params || {})}
+              style={({ pressed }) => [styles.primaryBtn, pressed && { transform: [{ scale: 0.98 }] }]}
+            >
+              <Text style={styles.primaryTxt}>Add a dog</Text>
+            </Pressable>
           </View>
         )}
 
+        {/* 하단 가족 스트립 (Black & White 무드) */}
         <View style={styles.footerStrip}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.footerContent}>
-            <View style={styles.meWrap}>
-              <View style={styles.avatarWrap}>
-                {userProfile?.photoUri ? (
-                  <Image source={{ uri: userProfile.photoUri }} style={styles.avatar} />
-                ) : (
-                  <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                    <Ionicons name="person-circle-outline" size={24} color="#9AB4D0" />
-                  </View>
-                )}
-              </View>
-              <Text numberOfLines={1} style={styles.avatarName}>{userProfile?.name || "Me"}</Text>
-            </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.footerContent}
+          >
 
+
+          {/* Me */}
+        <View style={styles.memberItem}>
+          <View style={styles.avatarWrap}>
+           {userProfile?.photoUri || userProfile?.photo || userProfile?.imageUri ? (
+          <Image
+            source={{ uri: userProfile.photoUri || userProfile.photo || userProfile.imageUri }}
+           style={styles.avatar}
+          />
+          ) : (
+           <View style={[styles.avatar, styles.avatarPlaceholder]}>
+            <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
+         </View>
+        )}
+       </View>
+        <Text numberOfLines={1} style={styles.avatarName}>
+           {userProfile?.name || "Me"}
+        </Text>
+        </View>
+            
+
+            {/* Family */}
             {familyProfiles.map((m) => (
-              <View key={m.id || m.name} style={styles.memberWrap}>
+              <View key={m.id || m.name} style={styles.memberItem}>
                 <View style={styles.avatarWrap}>
                   {m.photoUri ? (
                     <Image source={{ uri: m.photoUri }} style={styles.avatar} />
                   ) : (
                     <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                      <Ionicons name="person-outline" size={18} color="#9AB4D0" />
+                      <Ionicons name="person-outline" size={16} color="#9AA4AF" />
                     </View>
                   )}
                 </View>
@@ -137,11 +175,12 @@ export default function PuppySelectScreen() {
               </View>
             ))}
 
+            {/* Invite */}
             <Pressable
               onPress={() => navigation.navigate("InviteFamily")}
-              style={({ pressed }) => [styles.inviteCard, pressed && { transform: [{ scale: 0.98 }] }]}
+              style={({ pressed }) => [styles.invitePill, pressed && { transform: [{ scale: 0.98 }] }]}
             >
-              <Ionicons name="person-add-outline" size={16} color="#2D5D9F" />
+              <Ionicons name="person-add-outline" size={16} color="#111" />
               <Text style={styles.inviteTxt}>Invite</Text>
             </Pressable>
           </ScrollView>
@@ -151,91 +190,120 @@ export default function PuppySelectScreen() {
   );
 }
 
-const CARD_BG = "#fff";
+/* --------- Design Tokens (Black & White) --------- */
+const PRIMARY = "#000";
+const BACKGROUND = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT_DARK = "#111827";
+const TEXT_DIM = "#6B7280";
+
+const CARD_SHADOW = {
+  shadowOpacity: 0.12,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 8 },
+  elevation: 5,
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#white", paddingHorizontal: 16, paddingTop: 8 },
-  backButton: { position: "absolute", top: 10, left: 12, zIndex: 10 },
+  safe: { flex: 1, backgroundColor: BACKGROUND },
+  container: { flex: 1, backgroundColor: BACKGROUND, paddingHorizontal: 28, paddingTop: 50 },
 
-  header: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingTop: 38, paddingBottom: 8,
-  },
-  title: { fontSize: 22, fontWeight: "800", color: "#2D5D9F" },
-  subtitle: { marginTop: 2, color: "#4F6B8F", fontSize: 13 },
-
-  headerAdd: {
-    height: 36, paddingHorizontal: 12, borderRadius: 18,
-    borderWidth: 1, borderColor: "#9EC1E0",
-    backgroundColor: "#E5F0FB",
+  /* Top controls (절대 위치: 다른 화면과 동일 높이/여백) */
+  backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
+  addBtn: {
+    position: "absolute", top: 10, right: 16, zIndex: 10,
+    height: 34, paddingHorizontal: 12, borderRadius: 10,
+    backgroundColor: PRIMARY,
     flexDirection: "row", alignItems: "center", gap: 6,
+    ...CARD_SHADOW,
   },
-  headerAddTxt: { color: "#2D5D9F", fontWeight: "800" },
+  addTxt: { color: "#fff", fontWeight: "800" },
 
-  listContent: { paddingTop: 4, paddingBottom: 24 },
+  /* Header */
+  header: { alignItems: "center", marginBottom: 12 },
+  title: { fontSize: 28, fontWeight: "800", color: PRIMARY, letterSpacing: 0.5 },
+  subtitle: { fontSize: 14, color: TEXT_DIM, marginTop: 6 },
 
-  bannerCard: {
-    marginTop: 10,
+  /* Dog card — 크고 시원하게 */
+  card: {
+    marginTop: 20, 
     flexDirection: "row",
-    gap: 14,
-    borderRadius: 18,
-    backgroundColor: CARD_BG,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-    minHeight: 120,
+    alignItems: "center",
+    gap: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: BORDER,
+    backgroundColor: "#fff",
+    padding: 16,
+    minHeight: 140,
+    ...CARD_SHADOW,
   },
-  thumbSquare: {
-    width: 120,
-    aspectRatio: 1,
-    borderRadius: 14,
+  thumb: {
+    width: 110,
+    height: 110,
+    borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#E5F0FB",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: BORDER,
   },
   thumbImg: { width: "100%", height: "100%" },
+  thumbPlaceholder: { alignItems: "center", justifyContent: "center", backgroundColor: "#FAFAFA" },
 
-  infoCol: { flex: 1, justifyContent: "center" },
+  cardBody: { flex: 1, justifyContent: "center" },
+  dogName: { fontSize: 22, fontWeight: "900", color: TEXT_DARK },
+  metaRow: { flexDirection: "row", alignItems: "center", marginTop: 6, flexWrap: "wrap" },
+  metaText: { fontSize: 15, color: TEXT_DARK, fontWeight: "700" },
+  metaDim: { fontSize: 14, color: TEXT_DIM, fontWeight: "600" },
 
-  dogName: { fontSize: 26, fontWeight: "900", color: "#2D4F78" },
-  metaRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 },
-  metaItem: { color: "#2D5D9F", fontWeight: "800" },
-  metaDim: { color: "#5B7A9D", fontWeight: "700" },
+  /* Empty */
+  emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  emptyIconWrap: {
+    width: 64, height: 64, borderRadius: 32,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: BORDER, backgroundColor: "#fff",
+    ...CARD_SHADOW,
+  },
+  emptyTitle: { fontSize: 18, fontWeight: "900", color: TEXT_DARK, marginTop: 10 },
+  emptyText: { fontSize: 14, color: TEXT_DIM, textAlign: "center" },
+  primaryBtn: {
+    marginTop: 10, height: 46, borderRadius: 10, paddingHorizontal: 16,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: PRIMARY,
+    ...CARD_SHADOW,
+  },
+  primaryTxt: { color: "#fff", fontWeight: "800" },
 
+  /* Footer strip (family) */
   footerStrip: {
-    position: "absolute", left: 0, right: 0, bottom: 0,
+    position: "absolute",
+    left: 0, right: 0, bottom: 0,
     paddingVertical: 10, paddingHorizontal: 12,
     backgroundColor: "#FFFFFFEE",
-    borderTopWidth: 1, borderColor: "#D6E4F1",
-    shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: -4 },
+    borderTopWidth: 1, borderColor: BORDER,
   },
   footerContent: { alignItems: "center", paddingRight: 12 },
 
-  meWrap: { alignItems: "center", marginRight: 12 },
-  memberWrap: { alignItems: "center", marginRight: 12 },
-
+  memberItem: { alignItems: "center", marginRight: 12 },
   avatarWrap: {
     width: 44, height: 44, borderRadius: 22, overflow: "hidden",
-    backgroundColor: "#E5F0FB", borderWidth: 1, borderColor: "#C7DCEF",
+    backgroundColor: "#fff", borderWidth: 1, borderColor: BORDER,
     alignItems: "center", justifyContent: "center",
   },
   avatar: { width: "100%", height: "100%" },
   avatarPlaceholder: { alignItems: "center", justifyContent: "center" },
-  avatarName: { marginTop: 4, fontSize: 11, color: "#2D4F78", fontWeight: "700", maxWidth: 60, textAlign: "center" },
-
-  inviteCard: {
-    height: 44, paddingHorizontal: 12, borderRadius: 22,
-    backgroundColor: "#E5F0FB", borderWidth: 1, borderColor: "#C7DCEF",
-    flexDirection: "row", alignItems: "center", gap: 6,
-    marginLeft: 6,
+  avatarName: {
+    marginTop: 4, fontSize: 11, color: TEXT_DARK, fontWeight: "700",
+    maxWidth: 60, textAlign: "center",
   },
-  inviteTxt: { color: "#2D5D9F", fontWeight: "800" },
 
-  emptyWrap: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { marginTop: 8, color: "#4F6B8F", fontSize: 13, textAlign: "center" },
+  invitePill: {
+    height: 44, paddingHorizontal: 12, borderRadius: 22,
+    backgroundColor: "#fff", borderWidth: 1, borderColor: BORDER,
+    flexDirection: "row", alignItems: "center", gap: 6,
+  },
+  inviteTxt: { color: TEXT_DARK, fontWeight: "800" },
 
-  imagePlaceholder: { alignItems: "center", justifyContent: "center" },
+  /* Interaction */
   pressed: { transform: [{ scale: 0.99 }] },
 });

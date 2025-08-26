@@ -15,6 +15,12 @@ import AddDogStep3Screen from '../screens/AddDogStep3Screen';
 import InviteFamilyScreen from '../screens/InviteFamilyScreen';
 import ChatBotScreen from '../screens/ChatBotScreen'; 
 import DiaryScreen from '../screens/DiaryScreen';
+import DiaryEditorScreen from '../screens/DiaryEditorScreen';
+import DiaryList from '../screens/DiaryList';
+import DiaryView from '../screens/DiaryView';
+import DiaryDetailScreen from '../screens/DiaryDetailScreen';
+import GalleryView from '../screens/GalleryView';
+import SignupSuccessScreen from '../screens/SignupSuccessScreen';
 
 const Stack= createNativeStackNavigator();
 
@@ -36,7 +42,14 @@ export default function StackNavigator(){
             <Stack.Screen name='InviteFamily' component={InviteFamilyScreen} />
             <Stack.Screen name='ChatBot' component={ChatBotScreen} />
             <Stack.Screen name='Diary' component={DiaryScreen} />
-     
+            <Stack.Screen name='DiaryEditor' component={DiaryEditorScreen} />
+            <Stack.Screen name='DiaryList' component={DiaryList} />
+            <Stack.Screen name='DiaryView' component={DiaryView} />
+            <Stack.Screen name='DiaryDetail' component={DiaryDetailScreen} />
+            <Stack.Screen name='GalleryView' component={GalleryView} />
+            <Stack.Screen name='SignupSuccess' component={SignupSuccessScreen} />
+            
+
 
         </Stack.Navigator>
     )

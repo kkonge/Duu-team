@@ -49,9 +49,9 @@ export default function LoginScreen() {
         <View style={styles.card}>
     
           <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>이메일</Text>
             <TextInput
-              placeholder="Enter your email"
+              placeholder="이메일 입력"
               placeholderTextColor="#9AA4AF"
               value={email}
               onChangeText={setEmail}
@@ -64,10 +64,10 @@ export default function LoginScreen() {
 
       
           <View style={styles.field}>
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>비밀번호</Text>
             <View style={styles.passwordRow}>
               <TextInput
-                placeholder="Enter your password"
+                placeholder="비밀번호 입력"
                 placeholderTextColor="#9AA4AF"
                 value={password}
                 onChangeText={setPassword}
@@ -98,11 +98,11 @@ export default function LoginScreen() {
               <View style={[styles.radio, remember && styles.radioOn]}>
                 {remember && <View style={styles.radioDot} />}
               </View>
-              <Text style={styles.rememberTxt}>Remember Me</Text>
+              <Text style={styles.rememberTxt}>기억하기</Text>
             </Pressable>
 
             <TouchableOpacity onPress={() => console.log("Forgot password")}>
-              <Text style={styles.forgot}>Forgot Password?</Text>
+              <Text style={styles.forgot}>비밀번호를 잊으셨나요?</Text>
             </TouchableOpacity>
           </View>
 
@@ -116,7 +116,7 @@ export default function LoginScreen() {
               pressed && { transform: [{ scale: 0.99 }] },
             ]}
           >
-            <Text style={styles.loginTxt}>Log in</Text>
+            <Text style={styles.loginTxt}>로그인</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
