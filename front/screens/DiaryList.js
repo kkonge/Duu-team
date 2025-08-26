@@ -1,26 +1,45 @@
-// screens/DiaryList.js — Diary-style feed (author shown)
-import React, { useEffect, useState, useCallback } from 'react';
-import {
-  View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator,
-  RefreshControl, StyleSheet, Dimensions,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
 
-const LOCAL_KEY = '@diary_local_entries';
-const { width } = Dimensions.get('window');
-const H_PADDING = 14;
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import {
+  View, Text, SectionList, Image, TouchableOpacity, ActivityIndicator,
+  RefreshControl, StyleSheet, Dimensions,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
+
+const LOCAL_KEY = "@diary_local_entries";
+const { width: SCREEN_W } = Dimensions.get("window");
+
+
+const BG = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT = "#111827";
+const TEXT_DIM = "#6B7280";
+const SOFT = "#F9FAFB";
+const CARD_SHADOW = {
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+};
+
+
+const LIST_HPAD = 16;
+const CARD_PAD   = 12;
+const CONTENT_W  = SCREEN_W - (LIST_HPAD * 2) - (CARD_PAD * 2);
+/* 안정적 비율(약 16:9 근사) */
+const GRID_H     = Math.round(CONTENT_W * 0.52);
 
 export default function DiaryList({ onPressItem, onPressWrite }) {
   const [items, setItems] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadLocal = useCallback(async () => {
     const raw = await AsyncStorage.getItem(LOCAL_KEY);
     const local = raw ? JSON.parse(raw) : [];
-    local.sort((a, b) => (b.date || '').localeCompare(a.date || '')); // 최신 먼저
+    local.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
     return local;
   }, []);
 
@@ -49,20 +68,29 @@ export default function DiaryList({ onPressItem, onPressWrite }) {
     }
   }, [fetchAll]);
 
-  const renderItem = ({ item }) => (
-    <DiaryCard item={item} onPress={() => onPressItem?.(item)} />
-  );
+  const sections = useMemo(() => {
+    if (!items.length) return [];
+    const map = new Map();
+    for (const it of items) {
+      const key = toYmd(it.date);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(it);
+    }
+    return Array.from(map.entries()).map(([title, data]) => ({ title, data }));
+  }, [items]);
 
   if (loading) return <View style={s.center}><ActivityIndicator size="large" /></View>;
 
   if (!items.length) {
     return (
       <View style={[s.center, { flex: 1 }]}>
-        <Ionicons name="book-outline" size={36} color="#5A7698" />
-        <Text style={{ marginTop: 8, color: '#5A7698' }}>아직 작성된 일기가 없어요</Text>
-        <TouchableOpacity style={s.fabGhost} onPress={onPressWrite}>
-          <Ionicons name="add" size={24} color="#2D5D9F" />
-          <Text style={{ color: '#2D5D9F', fontWeight: '800', marginLeft: 4 }}>첫 일기 쓰기</Text>
+        <Ionicons name="book-outline" size={36} color={TEXT_DIM} />
+        <Text style={{ marginTop: 8, color: TEXT_DIM, fontWeight: "700" }}>
+          아직 작성된 일기가 없어요
+        </Text>
+        <TouchableOpacity style={s.ghostBtn} onPress={onPressWrite} activeOpacity={0.9}>
+          <Ionicons name="add" size={18} color={TEXT} />
+          <Text style={{ color: TEXT, fontWeight: "900", marginLeft: 6 }}>첫 일기 쓰기</Text>
         </TouchableOpacity>
       </View>
     );
@@ -70,150 +98,255 @@ export default function DiaryList({ onPressItem, onPressWrite }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList
-        data={items}
+      <SectionList
+        sections={sections}
         keyExtractor={(it) => String(it.id)}
-        renderItem={renderItem}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2D5D9F" />}
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 6 }}
+        renderItem={({ item }) => <DiaryCard item={item} onPress={() => onPressItem?.(item)} />}
+        renderSectionHeader={({ section: { title } }) => (
+          <View style={s.sectionHeader}>
+            <View style={s.sectionLine} />
+            <Text style={s.sectionTitle}>{title}</Text>
+            <View style={s.sectionLine} />
+          </View>
+        )}
+        stickySectionHeadersEnabled
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#111" />}
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: 6 }}
       />
-      {/* FAB */}
-      <TouchableOpacity style={s.fab} onPress={onPressWrite} activeOpacity={0.9}>
-        <Ionicons name="create-outline" size={24} color="#fff" />
-      </TouchableOpacity>
+
+
+      <View pointerEvents="box-none" style={s.fabWrap}>
+        <TouchableOpacity style={s.fab} onPress={onPressWrite} activeOpacity={0.9}>
+          <Ionicons name="create-outline" size={20} color="#fff" />
+          <Text style={s.fabTxt}>  새 일기 쓰기</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 function DiaryCard({ item, onPress }) {
-  const photos = item.photos || [];
-  const firstPhoto = photos[0];
-  const authorName = item.authorName || 'AUTHOR';
-  const timeText = formatDateTime(item.date);
+  const photos = Array.isArray(item.photos) ? item.photos.filter(Boolean) : [];
+  const authorName = item.authorName || "AUTHOR";
+  const timeText = toYmdHm(item.date);
+  const mood = item.mood;
+  const tags = item.tags || [];
 
   return (
     <View style={s.cardWrap}>
-      {/* 날짜 라벨 */}
-      <Text style={s.dateLabel}>{formatDate(item.date)}</Text>
-
-      {/* 본문 카드 */}
       <TouchableOpacity style={s.card} activeOpacity={0.85} onPress={onPress}>
-        <View style={s.row}>
-          {/* 왼쪽: 작성자/텍스트 */}
-          <View style={s.leftCol}>
-            <View style={s.avatarRow}>
-              <View style={s.avatar} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={s.author}>{authorName}</Text>
-            
-              </View>
-            </View>
-
-            {!!item.text && (
-              <Text style={s.bodyText} numberOfLines={4}>
-                {item.text}
-              </Text>
-            )}
-
-            <Text style={s.timeText}>{timeText}</Text>
-          </View>
-
-          {/* 오른쪽: 사진 박스 */}
-          <View style={s.rightCol}>
-            <View style={s.photoBox}>
-              {firstPhoto ? (
-                <Image source={{ uri: firstPhoto }} style={s.photo} resizeMode="cover" />
-              ) : (
-                <View style={[s.photo, { alignItems: 'center', justifyContent: 'center' }]}>
-                  <Ionicons name="image-outline" size={26} color="#c7a942" />
-                </View>
-              )}
+        {/* 헤더 */}
+        <View style={s.rowBetween}>
+          <View style={s.avatarRow}>
+            <View style={s.avatar} />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={s.author}>{authorName}</Text>
+              <Text style={s.timeText}>{timeText}</Text>
             </View>
           </View>
+          {!!mood && <MoodChip mood={mood} />}
         </View>
-      </TouchableOpacity>
 
-      {/* 구분선 */}
-      <View style={s.divider} />
+
+        {!!item.text && <Text style={s.bodyText} numberOfLines={3}>{item.text}</Text>}
+
+   
+        {!!photos.length && <PhotoGrid photos={photos} />}
+
+   
+        {!!tags.length && (
+          <View style={s.tagsRow}>
+            {tags.slice(0, 3).map((t) => (
+              <View key={t} style={s.tagChip}>
+                <Text style={s.tagTxt}>#{t}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </TouchableOpacity>
     </View>
   );
 }
 
-function formatDate(iso) {
-  if (!iso) return '-';
+
+function PhotoGrid({ photos }) {
+  const list = photos.slice(0, 4);
+  const extra = photos.length - list.length;
+  const GAP = 8;
+
+  return (
+    <View style={[s.gridWrap, { padding: GAP }]}>
+      {list.length === 1 && (
+        <Block w={CONTENT_W - GAP*2} h={GRID_H} uri={list[0]} />
+      )}
+
+      {list.length === 2 && (
+        <Row gap={GAP} w={CONTENT_W - GAP*2} h={GRID_H}>
+          <Cell uri={list[0]} />
+          <Cell uri={list[1]} />
+        </Row>
+      )}
+
+      {list.length === 3 && (
+        <Row gap={GAP} w={CONTENT_W - GAP*2} h={GRID_H}>
+          <Cell uri={list[0]} flex={62} />
+          <Col gap={GAP}>
+            <Cell uri={list[1]} />
+            <Cell uri={list[2]} />
+          </Col>
+        </Row>
+      )}
+
+      {list.length === 4 && (
+        <Wrap w={CONTENT_W - GAP*2} h={GRID_H} gap={GAP}>
+          {[0,1,2,3].map((i) => (
+            <Half key={i} gap={GAP}>
+              <Image source={{ uri: list[i] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              {i === 3 && photos.length > 4 && (
+                <View style={s.moreOverlay}>
+                  <Text style={s.moreTxt}>+{extra}</Text>
+                </View>
+              )}
+            </Half>
+          ))}
+        </Wrap>
+      )}
+
+ 
+      <View style={s.countBadge}>
+        <Ionicons name="images-outline" size={12} color="#fff" />
+        <Text style={s.countTxt}>{photos.length}</Text>
+      </View>
+    </View>
+  );
+}
+
+
+function Block({ w, h, uri }) {
+  return (
+    <View style={{ width: w, height: h, borderRadius: 12, overflow: "hidden" }}>
+      <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+    </View>
+  );
+}
+function Row({ children, gap, w, h }) {
+  return <View style={{ flexDirection: "row", gap, width: w, height: h }}>{children}</View>;
+}
+function Col({ children, gap }) {
+  return <View style={{ flex: 38, justifyContent: "space-between", gap }}>{children}</View>;
+}
+function Cell({ uri, flex = 1 }) {
+  return (
+    <View style={{ flex, borderRadius: 12, overflow: "hidden" }}>
+      <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+    </View>
+  );
+}
+function Wrap({ children, w, h, gap }) {
+  return <View style={{ flexDirection: "row", flexWrap: "wrap", gap, width: w, height: h }}>{children}</View>;
+}
+function Half({ children, gap }) {
+  return (
+    <View
+      style={{
+        width: (CONTENT_W - gap*3) / 2,
+        height: (GRID_H - gap) / 2,
+        borderRadius: 12,
+        overflow: "hidden",
+      }}
+    >
+      {children}
+    </View>
+  );
+}
+
+function MoodChip({ mood }) {
+  const icon =
+    mood === "happy" ? "happy-outline" :
+    mood === "walk"  ? "walk-outline"  :
+    mood === "health"? "medkit-outline": "sparkles-outline";
+  const label =
+    mood === "happy" ? "기분좋음" :
+    mood === "walk"  ? "산책"     :
+    mood === "health"? "건강"     : "메모";
+  return (
+    <View style={s.moodChip}>
+      <Ionicons name={icon} size={12} color={TEXT} />
+      <Text style={s.moodTxt}>{label}</Text>
+    </View>
+  );
+}
+
+/* utils */
+function toYmd(iso) {
+  if (!iso) return "-";
   const d = new Date(iso);
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}.${m}.${day}`;
 }
-function formatDateTime(iso) {
-  if (!iso) return '-';
+function toYmdHm(iso) {
+  if (!iso) return "-";
   const d = new Date(iso);
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
   return `${y}.${m}.${day} ${hh}:${mm}`;
 }
 
-const IMG_WIDTH = width * 0.45; // 오른쪽 이미지 폭
-const IMG_HEIGHT = IMG_WIDTH * 0.6;
-
+/* styles */
 const s = StyleSheet.create({
-  center: { justifyContent: 'center', alignItems: 'center' },
+  center: { justifyContent: "center", alignItems: "center" },
 
-  cardWrap: { paddingHorizontal: H_PADDING, paddingTop: 8, marginBottom: 6 },
-  dateLabel: {
-    fontSize: 15, fontWeight: '800', color: '#1D3557',
-    marginBottom: 6, marginLeft: 2,
+  sectionHeader: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingHorizontal: LIST_HPAD, marginTop: 12, marginBottom: 10,
   },
+  sectionLine: { flex: 1, height: 1, backgroundColor: "#EDF0F3" },
+  sectionTitle: { fontSize: 12, fontWeight: "900", color: "#9AA4AF" },
 
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#C9CDD2',
-    padding: 12,
+  cardWrap: { paddingHorizontal: LIST_HPAD, marginBottom: 8 },
+  card: { backgroundColor: BG, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: CARD_PAD, ...CARD_SHADOW },
+
+  rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  avatarRow: { flexDirection: "row", alignItems: "center" },
+  avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: SOFT, borderWidth: 1, borderColor: BORDER },
+  author: { fontSize: 14, fontWeight: "900", color: TEXT },
+  timeText: { marginTop: 2, fontSize: 11, color: TEXT_DIM, fontWeight: "800" },
+
+  bodyText: { marginTop: 6, color: TEXT, opacity: 0.95, lineHeight: 20, fontWeight: "600" },
+
+  gridWrap: {
+    marginTop: 10, borderRadius: 16, overflow: "hidden",
+    borderWidth: 1, borderColor: BORDER, backgroundColor: BG, ...CARD_SHADOW,
   },
-
-  row: { flexDirection: 'row', gap: 12 },
-  leftCol: { flex: 1 },
-  rightCol: { justifyContent: 'center' },
-
-  avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  avatar: {
-    width: 46, height: 46, borderRadius: 23, backgroundColor: '#fff',
-    borderWidth: 2, borderColor: '#222',
+  moreOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(17,17,17,0.35)",
+    alignItems: "center", justifyContent: "center",
   },
-  author: { fontSize: 15, fontWeight: '900', color: '#1e2937' },
-  email: { fontSize: 12, color: '#1e2937', textDecorationLine: 'underline', maxWidth: width * 0.4 },
-
-  bodyText: { marginTop: 4, color: '#4a5968', lineHeight: 20 },
-  timeText: { marginTop: 10, fontSize: 11, color: '#2c3e50', fontWeight: '800' },
-
-  photoBox: {
-    width: IMG_WIDTH, height: IMG_HEIGHT,
-    borderRadius: 8,
-    backgroundColor: '#F6DD77',
-    borderWidth: 2, borderColor: '#6b5a2b',
-    overflow: 'hidden',
+  moreTxt: { color: "#fff", fontWeight: "900", fontSize: 18 },
+  countBadge: {
+    position: "absolute", right: 10, top: 10,
+    backgroundColor: "rgba(17,17,17,0.75)",
+    paddingHorizontal: 8, paddingVertical: 4,
+    borderRadius: 999, flexDirection: "row", alignItems: "center", gap: 6,
   },
-  photo: { width: '100%', height: '100%' },
+  countTxt: { color: "#fff", fontWeight: "900", fontSize: 12 },
 
-  divider: { height: 1, backgroundColor: '#c9c9c9', marginTop: 14, marginBottom: 6 },
+  tagsRow: { flexDirection: "row", gap: 6, marginTop: 10 },
+  tagChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1, borderColor: BORDER, backgroundColor: SOFT },
+  tagTxt: { fontSize: 11, fontWeight: "900", color: TEXT },
 
-  fab: {
-    position: 'absolute', right: 16, bottom: 24,
-    width: 54, height: 54, borderRadius: 27,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#2D5D9F',
-    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10, shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
-  },
-  fabGhost: {
-    marginTop: 12, flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#E6F0FB', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, borderWidth: 1, borderColor: '#C3DAF1',
-  },
+  moodChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1, borderColor: BORDER, backgroundColor: SOFT, flexDirection: "row", alignItems: "center", gap: 6 },
+  moodTxt: { fontSize: 11, fontWeight: "900", color: TEXT },
+
+  ghostBtn: { marginTop: 12, flexDirection: "row", alignItems: "center", backgroundColor: SOFT, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, borderWidth: 1, borderColor: BORDER },
+
+  fabWrap: { position: "absolute", right: 16, bottom: 28, zIndex: 20 },
+  fab: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, height: 46, borderRadius: 23, backgroundColor: "#111", ...CARD_SHADOW },
+  fabTxt: { color: "#fff", fontWeight: "900" },
 });

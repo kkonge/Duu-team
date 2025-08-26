@@ -9,7 +9,7 @@ const imageSize = Math.floor((screenWidth - imageGap * (numColumns - 1)) / numCo
 const LOCAL_KEY = '@diary_local_entries';
 
 export default function GalleryView() {
-  const [photos, setPhotos] = useState([]); // [{ uri, diaryId }]
+  const [photos, setPhotos] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
