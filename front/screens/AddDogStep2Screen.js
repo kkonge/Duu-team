@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity, Pressable,
-  SafeAreaView, KeyboardAvoidingView, Platform, Switch, ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -9,19 +17,31 @@ export default function AddDogStep2Screen({ navigation, route }) {
   const baseParams = route?.params || {};
   const { photo, name, breed, birth } = baseParams;
 
-  const [sex, setSex] = useState(null);
-  const [neutered, setNeutered] = useState(false);
+  const [sex, setSex] = useState(null);              // "male" | "female"
+  const [size, setSize] = useState(null);            // "small" | "medium" | "large"
   const [weight, setWeight] = useState("");
-  const [unit, setUnit] = useState("kg");
   const [notes, setNotes] = useState("");
 
-  const canNext = sex === "male" || sex === "female";
+  // ✅ 필수값: 성별 + 체형 + 몸무게
+  const canNext =
+    (sex === "male" || sex === "female") &&
+    !!size &&
+    weight.trim().length > 0;
 
   const onNext = () => {
-    if (!canNext) {
+    if (!(sex === "male" || sex === "female")) {
       alert("성별을 선택해 주세요.");
       return;
     }
+    if (!size) {
+      alert("체형(소/중/대형견)을 선택해 주세요.");
+      return;
+    }
+    if (!weight.trim()) {
+      alert("몸무게(kg)를 입력해 주세요.");
+      return;
+    }
+
     navigation.navigate("AddDogStep3", {
       ...baseParams,
       photo,
@@ -29,266 +49,259 @@ export default function AddDogStep2Screen({ navigation, route }) {
       breed,
       birth,
       sex,
-      neutered,
-      weight: weight.trim().length ? Number(weight) : null,
-      unit,
+      size,
+      weight: Number(weight),
+      unit: "kg",   // 항상 kg
       notes: notes.trim().length ? notes.trim() : null,
     });
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAvoidingView behavior={Platform.select({ ios: "padding" })} style={styles.flex}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back-circle" size={32} color="#5B8DEF" />
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView behavior={Platform.select({ ios: "padding" })} style={styles.container}>
+        {/* 뒤로가기 */}
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
 
-        <View style={styles.progress}>
-          <View style={styles.dot} />
-          <View style={[styles.dot, styles.dotOn]} />
-          <View style={styles.dot} />
-        </View>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 28 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 헤더 */}
+          <View style={styles.header}>
+            <Text style={styles.title}>건강 · 생활 정보</Text>
+            <Text style={styles.subtitle}>성별, 체형, 몸무게 등을 입력해 주세요</Text>
 
-        <View style={styles.header}>
-          <Text style={styles.title}>건강 · 생활 정보</Text>
-          <Text style={styles.subtitle}>성별, 몸무게 등을 입력해 주세요</Text>
-        </View>
-
-        <ScrollView contentContainerStyle={styles.card} showsVerticalScrollIndicator={false}>
-          {/* 성별 */}
-          <Text style={styles.label}>Sex *</Text>
-          <View style={styles.genderRow}>
-            <Pressable
-              style={[styles.genderBtn, sex === "male" && styles.genderOn]}
-              onPress={() => setSex("male")}
-            >
-              <View style={[styles.radio, sex === "male" && styles.radioOn]}>
-                {sex === "male" && <View style={styles.radioDot} />}
-              </View>
-              <Text style={[styles.genderTxt, sex === "male" && styles.genderTxtOn]}>Male</Text>
-            </Pressable>
-
-            <Pressable
-              style={[styles.genderBtn, sex === "female" && styles.genderOn]}
-              onPress={() => setSex("female")}
-            >
-              <View style={[styles.radio, sex === "female" && styles.radioOn]}>
-                {sex === "female" && <View style={styles.radioDot} />}
-              </View>
-              <Text style={[styles.genderTxt, sex === "female" && styles.genderTxtOn]}>Female</Text>
-            </Pressable>
+            {/* 진행 점 */}
+            <View style={styles.progress}>
+              <View style={styles.dot} />
+              <View style={[styles.dot, styles.dotOn]} />
+              <View style={styles.dot} />
+            </View>
           </View>
 
-          {/* 중성화 여부 */}
-          <View style={[styles.rowBetween, { marginTop: 12 }]}>
-            <Text style={styles.labelInline}>Neutered</Text>
-            <Switch
-              value={neutered}
-              onValueChange={setNeutered}
-              trackColor={{ false: "#CBD5E1", true: "#93C5FD" }}
-              thumbColor={neutered ? "#3B82F6" : "#F3F4F6"}
-            />
-          </View>
+          {/* 카드 */}
+          <View style={styles.card}>
+            {/* 성별 */}
+            <Text style={styles.label}>성별 *</Text>
+            <View style={styles.genderRow}>
+              <Pressable
+                style={[styles.genderPill, sex === "male" && styles.pillOn]}
+                onPress={() => setSex("male")}
+              >
+                <Ionicons
+                  name="male-outline"
+                  size={16}
+                  color={sex === "male" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.pillTxt, sex === "male" && styles.pillTxtOn]}>Male</Text>
+              </Pressable>
 
-          {/* 몸무게 */}
-          <Text style={styles.label}>Weight</Text>
-          <View style={styles.row}>
+              <Pressable
+                style={[styles.genderPill, sex === "female" && styles.pillOn]}
+                onPress={() => setSex("female")}
+              >
+                <Ionicons
+                  name="female-outline"
+                  size={16}
+                  color={sex === "female" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.pillTxt, sex === "female" && styles.pillTxtOn]}>Female</Text>
+              </Pressable>
+            </View>
+
+            {/* 체형 (소/중/대형견) */}
+            <Text style={styles.label}>체형 *</Text>
+            <View style={styles.sizeRow}>
+              <Pressable
+                style={[styles.sizePill, size === "small" && styles.pillOn]}
+                onPress={() => setSize("small")}
+              >
+                <Ionicons
+                  name="paw-outline"
+                  size={16}
+                  color={size === "small" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.pillTxt, size === "small" && styles.pillTxtOn]}>소형견</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.sizePill, size === "medium" && styles.pillOn]}
+                onPress={() => setSize("medium")}
+              >
+                <Ionicons
+                  name="paw-outline"
+                  size={16}
+                  color={size === "medium" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.pillTxt, size === "medium" && styles.pillTxtOn]}>중형견</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.sizePill, size === "large" && styles.pillOn]}
+                onPress={() => setSize("large")}
+              >
+                <Ionicons
+                  name="paw-outline"
+                  size={16}
+                  color={size === "large" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.pillTxt, size === "large" && styles.pillTxtOn]}>대형견</Text>
+              </Pressable>
+            </View>
+
+            {/* 몸무게 */}
+            <Text style={styles.label}>몸무게 (kg) *</Text>
+            <View style={styles.row}>
+              <TextInput
+                value={weight}
+                onChangeText={setWeight}
+                placeholder="예: 7.8"
+                keyboardType="decimal-pad"
+                style={[styles.input, { flex: 1 }]}
+                placeholderTextColor="#9AA4AF"
+              />
+              {/* 오른쪽 단위: 박스 없이 텍스트만 */}
+              <Text style={[styles.unitTxt, { marginLeft: 10 }]}>kg</Text>
+            </View>
+
+            {/* 특이사항 */}
+            <Text style={styles.label}>특이사항</Text>
             <TextInput
-              value={weight}
-              onChangeText={setWeight}
-              placeholder={unit === "kg" ? "예: 7.8" : "예: 17.2"}
-              keyboardType="decimal-pad"
-              style={[styles.input, { flex: 1 }]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="예: 닭고기 알러지가 있어요"
+              multiline
+              style={[styles.input, { height: 90, textAlignVertical: "top" }]}
+              placeholderTextColor="#9AA4AF"
             />
-            <View style={{ width: 12 }} />
-            <Pressable
-              onPress={() => setUnit((u) => (u === "kg" ? "lb" : "kg"))}
-              style={[styles.input, styles.centerBox, styles.unitBtn]}
+
+            {/* 다음 버튼 */}
+            <TouchableOpacity
+              disabled={!canNext}
+              onPress={onNext}
+              style={[styles.submitBtn, !canNext && { opacity: 0.5 }]}
             >
-              <Text style={styles.unitTxt}>{unit}</Text>
-            </Pressable>
+              <Text style={styles.submitTxt}>계속하기</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* 특이사항 */}
-          <Text style={styles.label}>Notes</Text>
-          <TextInput
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="예: 닭고기 알러지가 있어요"
-            multiline
-            style={[styles.input, { height: 90, textAlignVertical: "top" }]}
-          />
-
-          {/* 다음 버튼 */}
-          <Pressable
-            disabled={!canNext}
-            onPress={onNext}
-            style={({ pressed }) => [
-              styles.primaryBtn,
-              !canNext && { opacity: 0.5 },
-              pressed && { transform: [{ scale: 0.99 }] },
-            ]}
-          >
-            <Text style={styles.primaryTxt}>Continue</Text>
-          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
+/* --------- 디자인 토큰 --------- */
+const PRIMARY = "#000";
+const BACKGROUND = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT_DARK = "#111827";
+
 const styles = StyleSheet.create({
-  flex: {
+  safe: { flex: 1, backgroundColor: BACKGROUND },
+  container: {
     flex: 1,
-    backgroundColor: "#F3F6FA",
-    paddingHorizontal: 20,
+    backgroundColor: BACKGROUND,
     paddingTop: 50,
   },
-  backButton: {
-    position: "absolute",
-    top: 12,
-    left: 20,
-    zIndex: 10,
-  },
-  progress: {
-    flexDirection: "row",
-    alignSelf: "center",
-    marginTop: 8,
-    gap: 6,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#CBD5E1",
-  },
-  dotOn: {
-    backgroundColor: "#3A6FA1",
-  },
-  header: {
-    alignItems: "center",
-    paddingTop: 10,
-    paddingBottom: 12,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#2D5D9F",
-  },
-  subtitle: {
-    marginTop: 4,
-    color: "#475569",
-    fontSize: 14,
-  },
+
+  backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
+
+  header: { alignItems: "center", gap: 6, marginBottom: 12 },
+  title: { fontSize: 25, fontWeight: "800", color: PRIMARY, letterSpacing: 0.5 },
+  subtitle: { fontSize: 15, color: "#444", textAlign: "center", opacity: 0.85, lineHeight: 20 },
+
+  progress: { flexDirection: "row", gap: 6, marginTop: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E5E7EB" },
+  dotOn: { backgroundColor: "#111" },
+
   card: {
-    marginTop: 12,
-    padding: 20,
-    borderRadius: 24,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
-    paddingBottom: 32,
-  },
-  label: {
-    marginTop: 8,
-    marginBottom: 6,
-    color: "#1E293B",
-    fontWeight: "700",
-  },
-  labelInline: {
-    color: "#1E293B",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-  input: {
-    height: 44,
+    marginTop: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 22,
     borderRadius: 22,
+    backgroundColor: "#fff",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+
+  label: { marginTop: 8, marginBottom: 10, color: "#1E293B", fontWeight: "700" },
+
+  row: { flexDirection: "row", alignItems: "center" },
+
+  input: {
+    height: 50,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
+    borderWidth: 1.2,
+    borderColor: BORDER,
     backgroundColor: "#fff",
     fontSize: 15,
+    color: TEXT_DARK,
   },
-  centerBox: {
-    justifyContent: "center",
-    paddingVertical: 0,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  rowBetween: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+
+  /* 성별/체형 Pill */
   genderRow: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 24,
-    marginVertical: 8,
+    gap: 22,
+    marginTop: 2,
+    marginBottom: 6,
   },
-  genderBtn: {
+  sizeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 6,
+  },
+  genderPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+    height: 40,
+    borderRadius: 100,
+    backgroundColor: "#F3F4F6",
+    borderWidth: 1.2,
+    borderColor: BORDER,
+  },
+  sizePill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 999,
-  },
-  genderOn: {
-    backgroundColor: "#E0EDFB",
-  },
-  genderTxt: {
-    color: "#334155",
-    fontSize: 16,
-  },
-  genderTxtOn: {
-    fontWeight: "800",
-    color: "#2563EB",
-  },
-  radio: {
-    height: 18,
-    width: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: "#94A3B8",
-    alignItems: "center",
+    paddingHorizontal: 13,
+    height: 40,
+    borderRadius: 100,
+    backgroundColor: "#F3F4F6",
+    borderWidth: 1.2,
+    borderColor: BORDER,
+    flex: 1,
     justifyContent: "center",
   },
-  radioOn: {
-    borderColor: "#2563EB",
-  },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#2563EB",
-  },
-  unitBtn: {
-    width: 64,
-    alignItems: "center",
-  },
-  unitTxt: {
-    fontWeight: "700",
-    color: "#1E3A8A",
-  },
-  primaryBtn: {
-    marginTop: 20,
-    height: 48,
-    borderRadius: 24,
+  pillOn: { backgroundColor: "#111", borderColor: "#111" },
+  pillTxt: { color: "#374151", fontSize: 14.5, fontWeight: "600" },
+  pillTxtOn: { color: "#fff" },
+
+  /* 단위 텍스트 */
+  unitTxt: { fontWeight: "800", color: TEXT_DARK, letterSpacing: 0.2 },
+
+  /* CTA */
+  submitBtn: {
+    marginTop: 14,
+    height: 47,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#E1ECF9",
-    borderWidth: 1,
-    borderColor: "#C3D7F3",
+    backgroundColor: PRIMARY,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
-  primaryTxt: {
-    color: "#2D5D9F",
-    fontWeight: "800",
-    fontSize: 16,
-  },
+  submitTxt: { fontSize: 17, fontWeight: "800", color: "#fff", letterSpacing: 0.5},
 });
