@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 export default function SignupSuccessScreen() {
   const navigation = useNavigation();
 
-  // 애니메이션 값
+
   const ringScale = useRef(new Animated.Value(0)).current;
   const ringOpacity = useRef(new Animated.Value(0)).current;
   const checkScale = useRef(new Animated.Value(0)).current;
@@ -25,7 +25,7 @@ export default function SignupSuccessScreen() {
   const subTranslate = useRef(new Animated.Value(12)).current;
 
   useEffect(() => {
-    // 1) 원 등장
+   
     Animated.parallel([
       Animated.timing(ringOpacity, {
         toValue: 1,
@@ -40,7 +40,7 @@ export default function SignupSuccessScreen() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // 2) 체크 팝
+  
       Animated.spring(checkScale, {
         toValue: 1,
         friction: 6,
@@ -48,7 +48,7 @@ export default function SignupSuccessScreen() {
         useNativeDriver: true,
       }).start();
 
-      // 3) 타이틀 페이드 인 (살짝 딜레이)
+ 
       Animated.parallel([
         Animated.timing(titleOpacity, {
           toValue: 1,
@@ -65,7 +65,7 @@ export default function SignupSuccessScreen() {
         }),
       ]).start();
 
-      // 4) 서브텍스트 페이드 인 (조금 더 딜레이)
+
       Animated.parallel([
         Animated.timing(subOpacity, {
           toValue: 1,
@@ -83,7 +83,7 @@ export default function SignupSuccessScreen() {
       ]).start();
     });
 
-    // 2.2초 후 프로필 화면으로 이동 (글자 충분히 보이게)
+
     const timer = setTimeout(() => {
       navigation.replace("UserProfile");
     }, 2200);
@@ -94,7 +94,7 @@ export default function SignupSuccessScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.wrap}>
-        {/* 라운드 원 */}
+       
         <Animated.View
           style={[
             styles.ring,
@@ -106,7 +106,7 @@ export default function SignupSuccessScreen() {
           </Animated.View>
         </Animated.View>
 
-        {/* 텍스트 영역 */}
+
         <View style={{ alignItems: "center", minHeight: 72 }}>
           <Animated.Text
             style={[

@@ -17,12 +17,12 @@ export default function AddDogStep2Screen({ navigation, route }) {
   const baseParams = route?.params || {};
   const { photo, name, breed, birth } = baseParams;
 
-  const [sex, setSex] = useState(null);              // "male" | "female"
-  const [size, setSize] = useState(null);            // "small" | "medium" | "large"
+  const [sex, setSex] = useState(null);            
+  const [size, setSize] = useState(null);          
   const [weight, setWeight] = useState("");
   const [notes, setNotes] = useState("");
 
-  // ✅ 필수값: 성별 + 체형 + 몸무게
+
   const canNext =
     (sex === "male" || sex === "female") &&
     !!size &&
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     color: TEXT_DARK,
   },
 
-  /* 성별/체형 Pill */
+
   genderRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -286,10 +286,10 @@ const styles = StyleSheet.create({
   pillTxt: { color: "#374151", fontSize: 14.5, fontWeight: "600" },
   pillTxtOn: { color: "#fff" },
 
-  /* 단위 텍스트 */
+  
   unitTxt: { fontWeight: "800", color: TEXT_DARK, letterSpacing: 0.2 },
 
-  /* CTA */
+
   submitBtn: {
     marginTop: 14,
     height: 47,

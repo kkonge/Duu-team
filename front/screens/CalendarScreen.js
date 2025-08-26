@@ -19,9 +19,9 @@ import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CalendarScreen({ navigation, onBack }) {
-  // 캘린더 요약
+
   const [selectedDate, setSelectedDate] = useState('');
-  const [summaries, setSummaries] = useState({}); // { 'YYYY-MM-DD': string[] }
+  const [summaries, setSummaries] = useState({}); 
   const [visibleYear, setVisibleYear] = useState(null);
   const [visibleMonth, setVisibleMonth] = useState(null);
 

@@ -20,9 +20,9 @@ export default function AddDogStep3Screen({ navigation, route }) {
     name = "",
     breed = "",
     birth = null,
-    sex = null,          // "male" | "female"
-    size = null,         // "small" | "medium" | "large"
-    weight = null,       // number (kg)
+    sex = null,       
+    size = null,        
+    weight = null,       
     notes = null,
   } = route.params || {};
 
@@ -194,7 +194,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
   );
 }
 
-/* - 재사용 Row 컴포넌트 - */
+
 function Row({ label, value, multiline = false }) {
   return (
     <View style={[styles.rowItem, multiline && { alignItems: "flex-start" }]}>
@@ -209,7 +209,7 @@ function Row({ label, value, multiline = false }) {
   );
 }
 
-/* --------- 디자인 토큰 (블랙/화이트 무드) --------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";
@@ -220,11 +220,11 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: { flex: 1, paddingHorizontal: 28, paddingTop: 20, backgroundColor: BACKGROUND },
 
-  /* 헤더: back 버튼을 헤더 내부 좌상단으로 */
+
   header: { alignItems: "center", gap: 6, marginBottom: 12 },
   backBtn: { alignSelf: "flex-start" },
 
-  /* 진행 점: 헤더 하단(타이틀/서브타이틀 바로 아래) */
+  
   progress: { flexDirection: "row", gap: 6, marginTop: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E5E7EB" },
   dotOn: { backgroundColor: "#111" },

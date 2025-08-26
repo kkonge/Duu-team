@@ -1,4 +1,4 @@
-// screens/ChatBotScreen.js
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
@@ -16,13 +16,13 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-/* ---------- HomeScreen과 동일한 디자인 토큰 ---------- */
+
 const BG = "#fff";
 const BORDER = "#E5E7EB";
 const TEXT = "#111827";
 const TEXT_DIM = "#6B7280";
 
-/* ---------- 미니 헤더 카드 ---------- */
+
 function ChatTopCard({ dog }) {
   return (
     <View style={styles.topCard}>
@@ -44,7 +44,7 @@ function ChatTopCard({ dog }) {
   );
 }
 
-/* ---------- 날짜 구분선 ---------- */
+
 function DayDivider({ label = "Today" }) {
   return (
     <View style={styles.dayDivider}>
@@ -72,10 +72,10 @@ export default function ChatBotScreen() {
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
-  const [showChips, setShowChips] = useState(true); // ✅ 칩 보임/숨김 토글
+  const [showChips, setShowChips] = useState(true); 
   const listRef = useRef(null);
 
-  // ✅ 유저 메시지 이미 있는지 체크 → 있으면 칩 숨김
+
   const hasUserMsg = useMemo(() => messages.some((m) => m.role === "user"), [messages]);
 
   const sendMessage = useCallback(async () => {
@@ -91,7 +91,7 @@ export default function ChatBotScreen() {
     setMessages((prev) => [userMsg, ...prev]);
     setInput("");
     setTyping(true);
-    setShowChips(false); // ✅ 첫 질문 보내면 칩 자동 숨김
+    setShowChips(false); 
 
     try {
       await new Promise((r) => setTimeout(r, 900));
@@ -149,7 +149,7 @@ export default function ChatBotScreen() {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, [messages.length]);
 
-  // ✅ 칩이 중복/과다로 느껴지지 않도록: "처음·입력 비어있음·유저메시지 없음·showChips=true" 에서만 표시
+
   const shouldShowChips = showChips && !hasUserMsg && input.trim().length === 0;
 
   return (
@@ -166,7 +166,7 @@ export default function ChatBotScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* 상단 카드 + 날짜 + (조건부)칩 */}
+        
         <ChatTopCard dog={dog} />
         <DayDivider label="Today" />
 
@@ -186,7 +186,7 @@ export default function ChatBotScreen() {
           </View>
         )}
 
-        {/* 대화 리스트 */}
+     
         <FlatList
           ref={listRef}
           style={{ flex: 1, paddingHorizontal: 16 }}
@@ -199,7 +199,7 @@ export default function ChatBotScreen() {
           showsVerticalScrollIndicator={false}
         />
 
-        {/* 타이핑 인디케이터 */}
+     
         {typing && (
           <View style={[styles.typingRow, { marginBottom: 74 }]}>
             <View style={styles.dot} />
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: "900", color: TEXT, letterSpacing: 2 },
 
-  /* Top Card */
+
   topCard: {
     marginHorizontal: 16,
     marginTop: 6,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   topCardPillTxt: { fontSize: 12, fontWeight: "900", color: TEXT },
 
-  /* Day Divider */
+ 
   dayDivider: {
     marginHorizontal: 16,
     marginBottom: 6,

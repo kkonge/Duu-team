@@ -13,7 +13,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-/* --------- Utils --------- */
+
 function getAgeLabel(birth) {
   if (!birth) return "-";
   const d = new Date(birth);
@@ -82,7 +82,7 @@ export default function PuppySelectScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        {/* Top Controls: Back (left) & Add (right) — 다른 화면과 동일한 위치 */}
+     
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
@@ -130,7 +130,7 @@ export default function PuppySelectScreen() {
           </View>
         )}
 
-        {/* 하단 가족 스트립 (Black & White 무드) */}
+    
         <View style={styles.footerStrip}>
           <ScrollView
             horizontal
@@ -190,7 +190,6 @@ export default function PuppySelectScreen() {
   );
 }
 
-/* --------- Design Tokens (Black & White) --------- */
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: { flex: 1, backgroundColor: BACKGROUND, paddingHorizontal: 28, paddingTop: 50 },
 
-  /* Top controls (절대 위치: 다른 화면과 동일 높이/여백) */
+  /* Top controls */
   backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
   addBtn: {
     position: "absolute", top: 10, right: 16, zIndex: 10,

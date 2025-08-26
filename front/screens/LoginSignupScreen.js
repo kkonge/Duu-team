@@ -25,7 +25,7 @@ export default function LoginSignupScreen({ navigation }) {
     if (!canSubmit) return;
     // TODO: 실제 인증 로직 연결
     console.log({ email, password });
-    navigation.navigate('PuppySelect'); // 필요 시 목적지 화면 변경
+    navigation.navigate('PuppySelect'); 
   };
 
   return (
@@ -46,7 +46,7 @@ export default function LoginSignupScreen({ navigation }) {
           />
         </View>
 
-        {/* 입력 카드 + 버튼들 */}
+
         <View style={styles.bottomContainer}>
           {/* 입력 폼 */}
           <View style={styles.card}>

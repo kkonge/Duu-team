@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
 
   field: { gap: 8 },
 
-  // 인풋 래퍼(왼쪽 아이콘/오른쪽 상태/토글)
+
   inputWrap: {
     position: "relative",
     justifyContent: "center",
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   input: {
     height: 54,
     borderRadius: 16,
-    paddingHorizontal: 44, // 왼쪽 아이콘 공간
+    paddingHorizontal: 44, 
     borderWidth: 1.2,
     borderColor: "#D1D5DB",
     backgroundColor: "#fff",

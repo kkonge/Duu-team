@@ -88,7 +88,7 @@ export default function HomeScreen() {
   const dog = route.params?.selectedDog || {};
   const ageText = useMemo(() => getAgeLabel(dog?.birth), [dog?.birth]);
 
-  /* ---------- Routines (now with category & goalPerDay & progress) ---------- */
+  /* ---------- Routines ---------- */
   const routinesInit = Array.isArray(route.params?.routines)
     ? route.params.routines
     : [
@@ -143,7 +143,7 @@ export default function HomeScreen() {
   const quickAdd = (category) =>
     setExtraLogs((p) => ({ ...p, [category]: Math.max(0, (p[category] || 0) + 1) }));
 
-  /* ---------- Status 계산: done = 루틴 progress 합 + extraLogs, total = 루틴 goal 합 or 기본 ---------- */
+  
   const DEFAULT_GOAL = { walk: 1, meal: 2, meds: 1 };
 
   const totalsByCat = useMemo(() => {
@@ -180,7 +180,7 @@ export default function HomeScreen() {
     meds: { done: doneByCat.meds, total: totalsByCat.meds, icon: "medkit-outline", label: "약", key: "meds" },
   };
 
-  /* ---------- Gallery & Activity (as-is) ---------- */
+
   const gallery = Array.isArray(dog?.gallery) ? dog.gallery : dog?.imageUri ? [dog.imageUri] : [];
   const gallery3 = gallery.slice(0, 3);
 
@@ -237,7 +237,7 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* 히어로 상태 + 퀵액션 */}
+            {/* 히어로 상태 */}
             <View style={styles.statusWrapHero}>
               {["walk", "meal", "meds"].map((k) => {
                 const s = status[k];
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
   badgeDim: { opacity: 0.85 },
 
-  /* Status in hero */
+  
   statusWrapHero: {
     marginTop: 16,
     padding: 12,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
   },
   barFillHero: { height: "100%", backgroundColor: "#fff" },
 
-  /* Progress (light) for cards */
+  /* Progress for cards */
   barWrap: { flex: 1, height: 8, borderRadius: 8, backgroundColor: "#F3F4F6", overflow: "hidden", borderWidth: 1, borderColor: "#EFEFEF" },
   barFill: { height: "100%", backgroundColor: "#111" },
 
