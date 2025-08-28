@@ -53,7 +53,7 @@ function IdScreen({ navigation, route }) {
         </Text>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate('Detail')}
+          onPress={() => navigation.navigate('Detail', { photo })}
           style={styles.registerButtonWrapper}
         >
           <View style={styles.registerButtonInner}>
@@ -65,8 +65,9 @@ function IdScreen({ navigation, route }) {
   );
 }
 
-function DetailScreen() {
-  const navigation = useNavigation();
+function DetailScreen({ route }) {
+  // ✅ AddDogStep1에서 넘어온 photo만 받음
+  const { photo } = route?.params || {};
   return (
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style='auto' />
@@ -85,7 +86,8 @@ function DetailScreen() {
 
           <Image
             style={styles.cardImage}
-            source={require('../assets/ID.png')}
+            // ✅ photo 있으면 그거, 없으면 기본 이미지
+            source={photo ? { uri: photo } : require('../assets/ID.png')}
           />
         </View>
 
