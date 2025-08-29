@@ -22,6 +22,7 @@ import DiaryDetailScreen from '../screens/DiaryDetailScreen';
 import GalleryView from '../screens/GalleryView';
 import SignupSuccessScreen from '../screens/SignupSuccessScreen';
 import IdCardScreen from '../screens/IdCardScreen';
+import WalkScreen from '../screens/WalkScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,7 @@ export default function StackNavigator() {
       <Stack.Screen name='DiaryDetail' component={DiaryDetailScreen} />
       <Stack.Screen name='GalleryView' component={GalleryView} />
       <Stack.Screen name='SignupSuccess' component={SignupSuccessScreen} />
+      <Stack.Screen name='Walk' component={WalkScreen} />
       <Stack.Screen
         name='IdCard'
         component={IdCardScreen}
