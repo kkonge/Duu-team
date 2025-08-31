@@ -26,7 +26,7 @@ const CARD_SHADOW = {
   shadowOffset: { width: 0, height: 6 },
   elevation: 3,
 };
-const LEGACY_KEY = "@diary_local_entries";   // 레거시 공용
+const LEGACY_KEY = "@diary_local_entries"; 
 const LOCAL_KEY = (id) => `@diary_local_entries:${id || "unknown"}`;
 
 const DIARY_KEY = "@diary_tab_is_diary";
@@ -70,7 +70,7 @@ export default function DiaryScreen() {
     try {
       const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
       const byDog = rawByDog ? JSON.parse(rawByDog) : [];
-      // 2) 레거시 호환: 같은 dogId만
+
       const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
       const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
       const list = [...byDog, ...legacy.filter(e => e.dogId === dogId)];

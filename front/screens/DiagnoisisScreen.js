@@ -12,24 +12,23 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-// ✅ 질문 JSON (경로를 프로젝트에 맞게 변경하세요)
+
 import QDATA from "../questions.json";
 
-/* ---------- Design tokens ---------- */
+
 const INK = "#0B0B0B";
 const INK_DIM = "#6B7280";
 const BG = "#F3F4F6";
 const CARD = "#FFFFFF";
 const BORDER = "#E5E7EB";
 
-/* ---------- showIf helper (DSL evaluator) ---------- */
-// answers: { [qid]: true|false|"없음"|"가끔"|"자주" }
+
 function shouldShow(question, answers) {
   const cond = question.showIf;
   if (!cond) return true;
 
   const check = (rule) => {
-    // rule: { qid: "q.gi.vomit", is: true|false|"없음"|"가끔"|"자주" }
+    // rule: { is: true|false|"없음"|"가끔"|"자주" }
     const val = answers[rule.qid];
     return val === rule.is;
   };
@@ -39,7 +38,7 @@ function shouldShow(question, answers) {
   return true;
 }
 
-/* ---------- Choice map ---------- */
+
 const CHOICES = ["없음", "가끔", "자주"];
 
 /* ---------- Screen ---------- */
@@ -49,7 +48,7 @@ export default function DiagnosisScreen() {
 
   // 사용자가 선택한 답변을 누적
   const [answers, setAnswers] = useState({});
-  // 현재 "보이는" 질문 배열(적응형 반영)
+
   const visibleQuestions = useMemo(
     () => QUESTIONS.filter((q) => shouldShow(q, answers)),
     [QUESTIONS, answers]
@@ -58,7 +57,7 @@ export default function DiagnosisScreen() {
   // 현재 인덱스
   const [idx, setIdx] = useState(0);
 
-  // visibleQuestions가 바뀌면, idx 범위 보정
+
   useEffect(() => {
     if (idx > visibleQuestions.length - 1) {
       setIdx(Math.max(0, visibleQuestions.length - 1));
@@ -86,7 +85,7 @@ export default function DiagnosisScreen() {
       Alert.alert("응답이 필요해요", "다음으로 넘어가기 전에 선택해 주세요.");
       return;
     }
-    // 마지막이면 결과로 이동
+    // 결과로 이동
     if (idx >= total - 1) {
       if (total === 0) {
         Alert.alert("표시할 문항이 없어요", "설문 구성이 아직 준비되지 않았습니다.");
@@ -99,7 +98,7 @@ export default function DiagnosisScreen() {
   };
 
   const skipThis = () => {
-    // 건너뛰기: 값 undefined 유지하고 다음으로 이동
+    // 건너뛰기
     if (idx >= total - 1) {
       nav.navigate("DiagnosisResult", { answers, version: QDATA?.version });
     } else {
@@ -143,7 +142,7 @@ export default function DiagnosisScreen() {
             <>
               <Text style={styles.qText}>{current.text}</Text>
 
-              {/* 답변 UI */}
+              {/* 답변 */}
               {current.type === "bool" ? (
                 <View style={styles.row}>
                   <ChoiceButton
@@ -212,7 +211,7 @@ export default function DiagnosisScreen() {
   );
 }
 
-/* ---------- Small UI atoms ---------- */
+
 function ChoiceButton({ label, active, onPress }) {
   return (
     <TouchableOpacity

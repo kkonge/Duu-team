@@ -16,13 +16,13 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-/* ---------- HomeScreen과 동일한 디자인 토큰 ---------- */
+
 const BG = "#fff";
 const BORDER = "#E5E7EB";
 const TEXT = "#111827";
 const TEXT_DIM = "#6B7280";
 
-/* ---------- 미니 헤더 카드 ---------- */
+
 function ChatTopCard({ dog }) {
   return (
     <View style={styles.topCard}>
@@ -44,7 +44,7 @@ function ChatTopCard({ dog }) {
   );
 }
 
-/* ---------- 날짜 구분선 ---------- */
+
 function DayDivider({ label = "Today" }) {
   return (
     <View style={styles.dayDivider}>
@@ -72,10 +72,10 @@ export default function ChatBotScreen() {
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
-  const [showChips, setShowChips] = useState(true); // ✅ 칩 보임/숨김 토글
+  const [showChips, setShowChips] = useState(true); 
   const listRef = useRef(null);
 
-  // ✅ 유저 메시지 이미 있는지 체크 → 있으면 칩 숨김
+ 
   const hasUserMsg = useMemo(() => messages.some((m) => m.role === "user"), [messages]);
 
   const sendMessage = useCallback(async () => {
@@ -91,7 +91,7 @@ export default function ChatBotScreen() {
     setMessages((prev) => [userMsg, ...prev]);
     setInput("");
     setTyping(true);
-    setShowChips(false); // ✅ 첫 질문 보내면 칩 자동 숨김
+    setShowChips(false); 
 
     try {
       await new Promise((r) => setTimeout(r, 900));
@@ -149,13 +149,13 @@ export default function ChatBotScreen() {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, [messages.length]);
 
-  // ✅ 칩이 중복/과다로 느껴지지 않도록: "처음·입력 비어있음·유저메시지 없음·showChips=true" 에서만 표시
+
   const shouldShowChips = showChips && !hasUserMsg && input.trim().length === 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.select({ ios: "padding" })}>
-        {/* 헤더 */}
+  
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
             <Ionicons name="chevron-back" size={20} color={TEXT} />
@@ -166,7 +166,7 @@ export default function ChatBotScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* 상단 카드 + 날짜 + (조건부)칩 */}
+  
         <ChatTopCard dog={dog} />
         <DayDivider label="Today" />
 
@@ -184,7 +184,7 @@ export default function ChatBotScreen() {
           </View>
         )}
 
-        {/* 대화 리스트 */}
+    
         <FlatList
           ref={listRef}
           style={{ flex: 1, paddingHorizontal: 16 }}
@@ -197,7 +197,7 @@ export default function ChatBotScreen() {
           showsVerticalScrollIndicator={false}
         />
 
-        {/* 타이핑 인디케이터 */}
+   
         {typing && (
           <View style={[styles.typingRow, { marginBottom: 74 }]}>
             <View style={styles.dot} />
@@ -207,7 +207,7 @@ export default function ChatBotScreen() {
           </View>
         )}
 
-        {/* 입력 바 */}
+  
         <View style={[styles.inputBar, { marginBottom: 84 }]}>
           <TouchableOpacity style={styles.inputIconBtn}>
             <Ionicons name="add-outline" size={20} color={TEXT_DIM} />
@@ -217,7 +217,7 @@ export default function ChatBotScreen() {
             value={input}
             onChangeText={(t) => {
               setInput(t);
-              if (t.length > 0 && showChips) setShowChips(false); // ✅ 타이핑 시작하면 칩 숨김
+              if (t.length > 0 && showChips) setShowChips(false); //chip 숨기기
             }}
             placeholder="메시지를 입력하세요"
             placeholderTextColor={TEXT_DIM}
@@ -243,7 +243,7 @@ export default function ChatBotScreen() {
           </Pressable>
         </View>
 
-        {/* 하단 탭 (HomeScreen과 동일) */}
+
         <View style={styles.tabBar}>
           <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("Id")}>
             <Ionicons name="person-outline" size={22} color="#111" />
@@ -265,7 +265,7 @@ export default function ChatBotScreen() {
 
 /* ---------------- styles ---------------- */
 const styles = StyleSheet.create({
-  /* Header */
+
   header: {
     paddingHorizontal: 18,
     marginTop: 8,
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: "900", color: TEXT, letterSpacing: 2 },
 
-  /* Top Card */
+
   topCard: {
     marginHorizontal: 16,
     marginTop: 6,
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
   },
 
-  /* Bottom Tab (HomeScreen과 동일) */
+  /*Tab  */
   tabBar: {
     position: "absolute",
     left: 18,

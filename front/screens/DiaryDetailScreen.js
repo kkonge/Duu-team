@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const { width } = Dimensions.get("window");
 const LOCAL_KEY = "@diary_local_entries";
 
-/* ---------- Design Tokens (공통) ---------- */
+
 const BG = "#fff";
 const BORDER = "#E5E7EB";
 const TEXT = "#111827";
@@ -62,7 +62,7 @@ export default function DiaryDetailScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
-      {/* 헤더 */}
+
       <View style={s.headerRow}>
         <TouchableOpacity style={s.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={20} color={TEXT} />
@@ -73,7 +73,7 @@ export default function DiaryDetailScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* 상단 메타 카드 */}
+ 
       <View style={s.metaCard}>
         <View style={{ flex: 1 }}>
           <Text style={s.metaTop}>기록 날짜</Text>
@@ -92,7 +92,7 @@ export default function DiaryDetailScreen({ route, navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
-        {/* 이미지 캐러셀 */}
+    
         {photos.length > 0 ? (
           <View style={s.carouselWrap}>
             <ScrollView
@@ -110,14 +110,14 @@ export default function DiaryDetailScreen({ route, navigation }) {
               ))}
             </ScrollView>
 
-            {/* 인덱스 배지 */}
+         
             <View style={s.indexBadge}>
               <Text style={s.indexTxt}>
                 {index + 1}/{photos.length}
               </Text>
             </View>
 
-            {/* 도트 인디케이터 */}
+      
             <View style={s.dots}>
               {photos.map((_, i) => (
                 <View
@@ -134,7 +134,7 @@ export default function DiaryDetailScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* 본문 */}
+  
         {!!entry.text && (
           <View style={s.bodyCard}>
             <Text style={s.bodyText}>{entry.text}</Text>
@@ -169,7 +169,7 @@ const slideH = slideW * 0.66;
 const s = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: BG },
 
-  /* Header (공통 톤) */
+
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -191,7 +191,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { fontSize: 16, fontWeight: "900", color: TEXT, letterSpacing: 2 },
 
-  /* Meta card */
+
   metaCard: {
     marginHorizontal: 16,
     marginBottom: 10,
@@ -218,7 +218,7 @@ const s = StyleSheet.create({
   },
   chipTxt: { fontSize: 12, fontWeight: "900", color: TEXT },
 
-  /* Carousel */
+
   carouselWrap: { marginBottom: 12 },
   carousel: { borderRadius: 14 },
   slideWrap: { width: slideW, height: slideH, marginRight: 10, borderRadius: 14, overflow: "hidden", backgroundColor: "#F3F4F6", borderWidth: 1, borderColor: BORDER, ...CARD_SHADOW },
@@ -239,7 +239,7 @@ const s = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#D1D5DB" },
   dotActive: { backgroundColor: TEXT },
 
-  /* Placeholder when no images */
+  
   carouselPlaceholder: {
     height: slideH,
     borderRadius: 14,
@@ -254,7 +254,7 @@ const s = StyleSheet.create({
   },
   placeholderTxt: { color: TEXT_DIM, fontWeight: "800" },
 
-  /* Body */
+ 
   bodyCard: {
     marginTop: 8,
     backgroundColor: "#fff",

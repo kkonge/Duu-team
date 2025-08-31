@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-/* ---------- 재사용: 카드형 인풋 래퍼 (포커스 테두리 효과 없음) ---------- */
+
 const InputRow = memo(function InputRow({ icon, children }) {
   return (
     <View style={styles.inputWrap}>
@@ -32,7 +32,7 @@ const InputRow = memo(function InputRow({ icon, children }) {
   );
 });
 const Divider = memo(() => <View style={styles.divider} />);
-/* ------------------------------------------------------------------- */
+
 
 export default function AddDogStep1Screen({ navigation, route }) {
   const baseParams = route?.params || {};
@@ -42,7 +42,7 @@ export default function AddDogStep1Screen({ navigation, route }) {
   const [birth, setBirth] = useState(null);
   const [showDate, setShowDate] = useState(false);
 
-  // ✅ 네 가지 모두 입력되어야 다음 단계 가능
+
   const canNext =
     !!photo &&
     name.trim().length > 0 &&
@@ -65,7 +65,7 @@ export default function AddDogStep1Screen({ navigation, route }) {
   };
 
   const onNext = () => {
-    // ✅ 누락된 항목을 친절히 안내
+ 
     if (!photo) {
       alert("강아지 사진을 선택해 주세요.");
       return;
@@ -181,7 +181,7 @@ export default function AddDogStep1Screen({ navigation, route }) {
               </InputRow>
             </Pressable>
 
-            {/* CTA */}
+       
             <TouchableOpacity
               disabled={!canNext}
               onPress={onNext}
@@ -191,7 +191,7 @@ export default function AddDogStep1Screen({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          {/* iOS Date Picker 모달 */}
+         
           {Platform.OS === "ios" ? (
             <Modal
               visible={showDate}
@@ -234,7 +234,7 @@ export default function AddDogStep1Screen({ navigation, route }) {
   );
 }
 
-/* --------- 디자인 토큰 (About You 무드와 동일) --------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
   },
 
-  /* 카드 */
+
   card: {
     marginTop: 16,
     paddingHorizontal: 18,
@@ -294,11 +294,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  /* 레이블 */
+
   label: { marginTop: 8, marginBottom: 8, color: "#1E293B", fontWeight: "700" },
   sectionTitle: { fontSize: 14, fontWeight: "800", color: "#111827", marginBottom: 8, opacity: 0.9 },
 
-  /* 인풋 카드형 래퍼 */
+
   inputWrap: {
     position: "relative",
     justifyContent: "center",
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
 
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 14 },
 
-  /* CTA */
+ 
   submitBtn: {
     marginTop: 14,
     height: 47,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   submitTxt: { fontSize: 17, fontWeight: "800", color: "#fff", letterSpacing: 0.5 },
 
-  /* 날짜 모달 */
+
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", alignItems: "center", justifyContent: "center" },
   modalSheet: { width: "86%", borderRadius: 16, backgroundColor: "#fff", paddingVertical: 12, alignItems: "center" },
   modalDone: { marginTop: 6, paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: "#E2E8F0" },

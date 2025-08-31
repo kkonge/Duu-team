@@ -27,7 +27,7 @@ export default function SignUpScreen() {
   const matchOk = password === confirm && confirm.length > 0;
 
   const score = useMemo(() => {
-    // 아주 심플한 강도 측정: 길이 + 종류
+
     let s = 0;
     if (password.length >= 6) s++;
     if (/[A-Z]/.test(password)) s++;
@@ -86,7 +86,7 @@ export default function SignUpScreen() {
         behavior={Platform.select({ ios: "padding", android: undefined })}
         style={styles.container}
       >
-        {/* 헤더 */}
+    
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
 
   field: { gap: 8 },
 
-  // 인풋 래퍼(왼쪽 아이콘/오른쪽 상태/토글)
+
   inputWrap: {
     position: "relative",
     justifyContent: "center",
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   input: {
     height: 54,
     borderRadius: 16,
-    paddingHorizontal: 44, // 왼쪽 아이콘 공간
+    paddingHorizontal: 44,
     borderWidth: 1.2,
     borderColor: "#D1D5DB",
     backgroundColor: "#fff",
@@ -289,8 +289,6 @@ const styles = StyleSheet.create({
   },
 
   
-
-  // 약관
   agreeRow: {
     marginTop: 2,
     flexDirection: "row",
@@ -316,7 +314,7 @@ const styles = StyleSheet.create({
     color: "#374151",
   },
 
-  // 버튼/링크
+  
   submitBtn: {
     marginTop: 6,
     height: 52,

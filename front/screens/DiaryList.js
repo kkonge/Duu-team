@@ -8,7 +8,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
-const LEGACY_KEY = "@diary_local_entries"; // 레거시(공용) 키
+const LEGACY_KEY = "@diary_local_entries"; 
 const { width: SCREEN_W } = Dimensions.get("window");
 
 const BG = "#fff";
@@ -29,7 +29,7 @@ const CARD_PAD   = 12;
 const CONTENT_W  = SCREEN_W - (LIST_HPAD * 2) - (CARD_PAD * 2);
 const GRID_H     = Math.round(CONTENT_W * 0.52);
 
-// ✨ 강아지별 키
+
 const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || "unknown"}`;
 
 export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
@@ -40,16 +40,16 @@ export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
   const { activeUserId } = useFamily();
 
   const loadLocal = useCallback(async () => {
-    // 1) 강아지별 키에서 불러오기
+
     const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
     const byDog = rawByDog ? JSON.parse(rawByDog) : [];
 
-    // 2) 레거시 공용 키에서 불러온 뒤, dogId로 필터(호환)
+
     const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
     const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
     const legacyForDog = legacy.filter(e => !dogId || e.dogId === dogId);
 
-    // 병합(중복 방지: id 기준)
+
     const map = new Map();
     [...byDog, ...legacyForDog].forEach(e => map.set(String(e.id), e));
     const merged = Array.from(map.values());
@@ -60,7 +60,7 @@ export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
 
   const fetchAll = useCallback(async () => {
     const local = await loadLocal();
-    // 레거시 호환: authorId 없으면 activeUserId로 채움
+
     const fixed = local.map(e => ({
       ...e,
       dogId: e.dogId ?? dogId,
@@ -111,7 +111,7 @@ export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
         </Text>
         <TouchableOpacity
           accessibilityRole="button"
-          onPress={() => onPressWrite?.(dogId)}     // ★ 현재 강아지로 작성
+          onPress={() => onPressWrite?.(dogId)}  
           activeOpacity={0.92}
           style={s.primaryBtn}
         >
@@ -146,7 +146,7 @@ export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
       <View pointerEvents="box-none" style={s.fabWrap}>
         <TouchableOpacity
           style={s.fab}
-          onPress={() => onPressWrite?.(dogId)}     // ★ 현재 강아지로 작성
+          onPress={() => onPressWrite?.(dogId)}    
           activeOpacity={0.9}
         >
           <Ionicons name="create-outline" size={20} color="#fff" />
@@ -157,10 +157,10 @@ export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
   );
 }
 
-/** 작성자 뱃지: authorId → 전역에서 닉네임/아바타 조회 */
+//작성자 뱃지: authorId → 전역에서 별명 조회 */
 function AuthorBadge({ authorId, fallbackName, timeText }) {
   const { getUser } = useFamily();
-  const u = getUser(authorId); // authorId 없으면 activeUser
+  const u = getUser(authorId); 
 
   const name = u?.nickname || u?.username || fallbackName || "AUTHOR";
   const uri  = u?.photoUri;
@@ -324,7 +324,7 @@ function MoodChip({ mood }) {
   );
 }
 
-/* utils */
+
 function toYmd(iso) {
   if (!iso) return "-";
   const d = new Date(iso);
@@ -348,7 +348,7 @@ function toYmdHm(iso) {
 const s = StyleSheet.create({
   center: { justifyContent: "center", alignItems: "center" },
 
-  // 🚀 비어있는 상태 CTA
+
   primaryBtn: {
     flexDirection: "row",
     alignItems: "center",

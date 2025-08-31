@@ -107,7 +107,7 @@ export default function UserProfileScreen() {
         behavior={Platform.select({ ios: "padding", android: undefined })}
         style={styles.container}
       >
-        {/* 헤더: 뒤로가기 (다른 화면과 동일한 위치) */}
+
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
@@ -117,12 +117,12 @@ export default function UserProfileScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* 헤더 타이틀/아바타는 내부 여백과 동일하게 맞춤 */}
+    
           <View style={styles.header}>
             <Text style={styles.title}>About You</Text>
             <Text style={styles.subtitle}>당신의 프로필을 작성해주세요!</Text>
 
-            {/* 아바타 */}
+
             <View style={styles.avatarWrap}>
               <TouchableOpacity onPress={pickImage} activeOpacity={0.85}>
                 <View style={styles.avatarShadow}>
@@ -141,9 +141,9 @@ export default function UserProfileScreen() {
             </View>
           </View>
 
-          {/* 카드: 좌우 여백을 카드 자체에 부여 -> 그림자 잘림 방지 */}
+       
           <View style={styles.card}>
-            {/* 이름 */}
+     
             <Text style={styles.label}>이름</Text>
             <InputRow icon="person-outline" styles={styles}>
               <TextInput
@@ -157,7 +157,7 @@ export default function UserProfileScreen() {
               />
             </InputRow>
 
-            {/* 별명 */}
+     
             <Text style={styles.label}>별명</Text>
             <InputRow icon="happy-outline" styles={styles}>
               <TextInput
@@ -172,7 +172,7 @@ export default function UserProfileScreen() {
 
             <Divider styles={styles} />
 
-            {/* 생년월일 */}
+  
             <Text style={styles.sectionTitle}>생년월일</Text>
             <Pressable onPress={() => setShowDate(true)}>
               <InputRow icon="calendar-outline" styles={styles}>
@@ -186,7 +186,7 @@ export default function UserProfileScreen() {
 
             <Divider styles={styles} />
 
-            {/* 성별 */}
+   
             <Text style={styles.sectionTitle}>성별</Text>
             <View style={styles.genderRow}>
               <Pressable
@@ -214,7 +214,7 @@ export default function UserProfileScreen() {
               </Pressable>
             </View>
 
-            {/* CTA */}
+            
             <TouchableOpacity
               disabled={!canSubmit}
               onPress={onContinue}
@@ -224,7 +224,7 @@ export default function UserProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* iOS Date Picker 모달 */}
+        
           {Platform.OS === "ios" ? (
             <Modal
               visible={showDate}
@@ -264,29 +264,28 @@ export default function UserProfileScreen() {
   );
 }
 
-/* --------- 디자인 토큰 --------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
 
-  // ⬇️ 컨테이너는 좌우 패딩 제거 (그림자 잘림 방지)
   container: {
     flex: 1,
     backgroundColor: BACKGROUND,
     paddingTop: 50,
   },
 
-  // ⬇️ 실제 여백은 스크롤 컨테이너로 관리
+ 
   scrollContent: {
     paddingBottom: 40,
   },
 
-  // ⬇️ 절대 위치: 다른 화면과 동일 위치
+
   backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
 
-  // 헤더는 자체 여백을 카드와 동일한 28로 맞춤
+ 
   header: { alignItems: "center", gap: 6, marginBottom: 12, paddingHorizontal: 28 },
   title: { fontSize: 28, fontWeight: "800", color: "#000", letterSpacing: 0.5 },
   subtitle: { fontSize: 16, color: "#444", textAlign: "center", opacity: 0.85, lineHeight: 20 },
@@ -315,10 +314,10 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
   },
 
-  // ⬇️ 카드 자체에 좌우 마진을 줘서 그림자 공간 확보
+
   card: {
     marginTop: 16,
-    marginHorizontal: 28,   // ⭐️ 핵심: 카드 좌우 여백
+    marginHorizontal: 28,   
     paddingHorizontal: 18,
     paddingVertical: 22,
     borderRadius: 22,

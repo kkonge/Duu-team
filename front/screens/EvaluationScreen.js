@@ -14,17 +14,17 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-/* ---------- Design tokens ---------- */
+
 const INK = "#0B0B0B";
 const INK_DIM = "#6B7280";
 const BG = "#F3F4F6";
 const CARD = "#FFFFFF";
 const BORDER = "#E5E7EB";
 
-/* ---------- Storage ---------- */
+
 const STORAGE_KEY = "HEALTH_ENTRIES_V1";
 
-/* ---------- helpers ---------- */
+
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const toPercent = (v, min, max) => {
   const n = Number(v);
@@ -65,8 +65,8 @@ function getLatest(entries, type) {
 function getLastN(entries, type, n) {
   return entries
     .filter((e) => e.type === type)
-    .sort((a, b) => a.ts - b.ts)       // 오래된 → 최신
-    .slice(-n);                        // 뒤에서 N개
+    .sort((a, b) => a.ts - b.ts)       
+    .slice(-n);                       
 }
 
 function fmtDate(ts) {
@@ -80,18 +80,18 @@ function fmtDate(ts) {
   }
 }
 
-/* ---------- Simple (no-SVG) Line Chart ---------- */
+
 function SimpleLineChart({
-  data = [],            // [{ x: timestamp(ms), y: number }]
+  data = [],          
   height = 180,
-  padding = 16,         // 내부 여백
+  padding = 16,     
   pointSize = 8,
   lineWidth = 2,
-  yPaddingTop = 26,     // 점 위 텍스트 위한 상단 여유
-  yPaddingBottom = 24,  // x축 날짜 라벨 공간
+  yPaddingTop = 26,     
+  yPaddingBottom = 24, 
   unit = "kg",
 }) {
-  const width = Math.min(Dimensions.get("window").width - 32, 600); // 카드 패딩 고려
+  const width = Math.min(Dimensions.get("window").width - 32, 600); 
   const innerW = width - padding * 2;
   const innerH = height - yPaddingTop - yPaddingBottom;
 
@@ -103,7 +103,7 @@ function SimpleLineChart({
     );
   }
 
-  // y 스케일링 (min=max일 때 대비해 범위 살짝 추가)
+ 
   const ys = data.map((d) => Number(d.y)).filter((n) => !Number.isNaN(n));
   const yMinRaw = Math.min(...ys);
   const yMaxRaw = Math.max(...ys);
@@ -111,10 +111,10 @@ function SimpleLineChart({
   const yMin = yMinRaw - pad;
   const yMax = yMaxRaw + pad;
 
-  // x 위치는 균등 간격 (데이터 순서대로)
+
   const stepX = data.length > 1 ? innerW / (data.length - 1) : 0;
 
-  // 좌표 변환 함수
+  
   const xAt = (i) => padding + i * stepX;
   const yAt = (v) => {
     const ratio = (v - yMin) / (yMax - yMin || 1);
@@ -122,12 +122,12 @@ function SimpleLineChart({
     return y;
   };
 
-  // 좌표 리스트
+
   const pts = data.map((d, i) => ({ x: xAt(i), y: yAt(Number(d.y)), raw: d }));
 
   return (
     <View style={[styles.trendCard, { height, width }]}>
-      {/* 선들 */}
+
       {pts.length > 1 &&
         pts.slice(0, -1).map((p, i) => {
           const p2 = pts[i + 1];
@@ -153,10 +153,10 @@ function SimpleLineChart({
           );
         })}
 
-      {/* 포인트 + 상단 값 라벨 + 하단 날짜 */}
+
       {pts.map((p, i) => (
         <React.Fragment key={`pt-${i}`}>
-          {/* 상단 값 라벨 */}
+
           <Text
             style={{
               position: "absolute",
@@ -173,7 +173,7 @@ function SimpleLineChart({
             {Number.isNaN(Number(p.raw.y)) ? "-" : `${p.raw.y}${unit ? unit : ""}`}
           </Text>
 
-          {/* 점 */}
+     
           <View
             style={{
               position: "absolute",
@@ -186,7 +186,7 @@ function SimpleLineChart({
             }}
           />
 
-          {/* 하단 날짜 라벨 */}
+     
           <Text
             style={{
               position: "absolute",
@@ -207,7 +207,7 @@ function SimpleLineChart({
   );
 }
 
-/* ---------- Screen ---------- */
+
 export default function EvaluationScreen() {
   const nav = useNavigation();
   const route = useRoute();
@@ -215,7 +215,7 @@ export default function EvaluationScreen() {
   const routeWeight = route.params?.weight ?? "-";
   const routeWalk = route.params?.recentWalkMin ?? "-";
 
-  // 히스토리 로드
+
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -233,7 +233,7 @@ export default function EvaluationScreen() {
     })();
   }, []);
 
-  // 최신값 보완 로직: 라우트 값이 유효하면 사용, 아니면 히스토리 최신값 사용
+
   const latestWeight = useMemo(() => getLatest(entries, "weight"), [entries]);
   const latestWalk = useMemo(() => getLatest(entries, "walk"), [entries]);
 
@@ -247,20 +247,20 @@ export default function EvaluationScreen() {
       ? routeWalk
       : latestWalk?.value ?? "-";
 
-  const weightPct = toPercent(weightVal, 4, 9); // 4~9kg 가정
-  const walkPct = toPercent(walkVal, 0, 90);    // 0~90분 가정
+  const weightPct = toPercent(weightVal, 4, 9); // 4~9kg 
+  const walkPct = toPercent(walkVal, 0, 90);    // 0~90분 
 
   const wCls = classifyWeight(weightVal);
   const walkCls = classifyWalk(walkVal);
   const overall = overallAssessment(wCls.tone, walkCls.tone);
 
-  // === 그래프용 시리즈: 최근 6회 체중 ===
+  // 그래프용: 최근 6회 체중 
   const weightSeries = useMemo(() => {
     const last = getLastN(entries, "weight", 6);
     return last.map((e) => ({ x: e.ts, y: Number(e.value) }));
   }, [entries]);
 
-  // (선택) 산책도 6회로 그리고 싶다면 아래처럼 만들 수 있어요.
+  
   const walkSeries = useMemo(() => {
     const last = getLastN(entries, "walk", 6);
     return last.map((e) => ({ x: e.ts, y: Number(e.value) }));
@@ -268,7 +268,7 @@ export default function EvaluationScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => nav.goBack()}>
           <Ionicons name="chevron-back" size={22} color={INK} />
@@ -284,11 +284,11 @@ export default function EvaluationScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
-          {/* Top row: Left summary card + Right big text assessment (with small emoji) */}
+       
           <View style={styles.topRow}>
-            {/* Left: Summary card */}
+      
             <View style={styles.summaryCard}>
-              {/* Weight */}
+   
               <View style={styles.rowBetween}>
                 <Text style={styles.metricTitle}>Weight (kg)</Text>
                 <Text style={[styles.badge, wCls.tone === "warn" ? styles.badgeWarn : styles.badgeOk]}>
@@ -300,10 +300,10 @@ export default function EvaluationScreen() {
                 현재 {Number.isNaN(Number(weightVal)) ? "-" : `${weightVal}kg`} · 권장 4~9kg
               </Text>
 
-              {/* Divider */}
+         
               <View style={styles.divider} />
 
-              {/* Walking */}
+        
               <View style={styles.rowBetween}>
                 <Text style={styles.metricTitle}>Walking (min)</Text>
                 <Text
@@ -325,7 +325,7 @@ export default function EvaluationScreen() {
               </Text>
             </View>
 
-            {/* Right: Big assessment text + small emoji */}
+
             <View style={styles.assessCol}>
               <Text
                 style={[
@@ -341,11 +341,11 @@ export default function EvaluationScreen() {
             </View>
           </View>
 
-          {/* Weight Change (최근 6회 · 점+값+날짜) */}
+          {/* Weight Change (최근 6회) */}
           <Text style={styles.sectionTitleBig}>Weight Change (최근 6회)</Text>
           <SimpleLineChart data={weightSeries} unit="kg" />
 
-          {/* Walking Time (원하면 표시) */}
+          {/* Walking Time  */}
           <Text style={styles.sectionTitleBig}>Walking Time (최근 6회)</Text>
           <SimpleLineChart data={walkSeries} unit="분" />
         </ScrollView>
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
 
   sectionTitleBig: { marginTop: 16, marginBottom: 8, fontSize: 14, fontWeight: "700", color: INK },
 
-  /* Chart card (공통 컨테이너) */
+
   trendCard: {
     backgroundColor: CARD,
     borderRadius: 16,

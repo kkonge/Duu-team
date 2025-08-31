@@ -8,7 +8,7 @@ const screenWidth = Dimensions.get('window').width;
 const imageGap = 2;
 const imageSize = Math.floor((screenWidth - imageGap * (numColumns - 1)) / numColumns);
 
-// 🔑 강아지별 / 레거시 키
+
 const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || 'unknown'}`;
 const LEGACY_KEY = '@diary_local_entries';
 
@@ -26,11 +26,11 @@ export default function GalleryView({ dogId, reloadKey = 0 }) {
           return;
         }
 
-        // 1) 강아지별 저장소
+    
         const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
         const byDog = rawByDog ? JSON.parse(rawByDog) : [];
 
-        // 2) 레거시 저장소(공용)에서 같은 dogId만 병합
+
         const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
         const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
         const merged = [...byDog, ...legacy.filter((e) => e.dogId === dogId)];

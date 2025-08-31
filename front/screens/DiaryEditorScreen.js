@@ -8,10 +8,10 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 🔑 강아지별 키 네임스페이스
+//강아지별 키 네임스페이스
 const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || "unknown"}`;
 const DRAFT_KEY = (dogId) => `@diary_draft:${dogId || "unknown"}`;
-// (레거시 참고용) const LEGACY_KEY = "@diary_local_entries";
+
 
 const BG = "#fff";
 const BORDER = "#E5E7EB";
@@ -41,7 +41,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
   const [mood, setMood]     = useState(null);
   const [tags, setTags]     = useState([]);
 
-  // 🔁 드래프트 복구 (강아지별)
+
   useEffect(() => {
     (async () => {
       const draftRaw = await AsyncStorage.getItem(DRAFT_KEY(dogId));
@@ -58,7 +58,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
     })();
   }, [dogId]);
 
-  // 📝 오토세이브 (강아지별)
+ 
   useEffect(() => {
     const timer = setTimeout(() => {
       AsyncStorage.setItem(DRAFT_KEY(dogId), JSON.stringify({ text, images, mood, tags }));
@@ -104,14 +104,14 @@ export default function DiaryEditorScreen({ navigation, route }) {
         return;
       }
 
-      // ⛳️ 강아지별 키에서 불러오기
+
       const raw = await AsyncStorage.getItem(LOCAL_KEY(dogId));
       const list = raw ? JSON.parse(raw) : [];
 
       const now = new Date();
       const entry = {
         id: `local_${now.getTime()}`,
-        dogId,                     // 🔴 반드시 포함
+        dogId,                  
         date: now.toISOString(),
         text,
         photos: images.map((it) => it.uri),
@@ -124,7 +124,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
       await AsyncStorage.setItem(LOCAL_KEY(dogId), JSON.stringify(next));
       await AsyncStorage.removeItem(DRAFT_KEY(dogId));
 
-      // 돌아갈 때도 dogId 함께 전달 (DiaryScreen이 리로드 트리거함)
+   
       navigation.navigate("Diary", { didSave: true, selectedDog, dogId });
     } catch (e) {
       console.error(e);
@@ -134,7 +134,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={ss.root}>
-      {/* 헤더 */}
+   
       <View style={ss.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={ss.hbtn}>
           <Ionicons name="chevron-back" size={20} color={TEXT} />
@@ -147,7 +147,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
-        {/* 무드 */}
+      
         <Text style={ss.label}>무드</Text>
         <View style={ss.moodRow}>
           {MOOD_OPTIONS.map((m) => {
@@ -161,7 +161,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
           })}
         </View>
 
-        {/* 사진 */}
+     
         <View style={ss.card}>
           <View style={ss.rowBetween}>
             <Text style={ss.cardTitle}>사진</Text>
@@ -189,7 +189,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
           </View>
         </View>
 
-        {/* 본문 */}
+        
         <View style={ss.card}>
           <Text style={ss.cardTitle}>본문</Text>
           <TextInput
@@ -203,7 +203,7 @@ export default function DiaryEditorScreen({ navigation, route }) {
           />
         </View>
 
-        {/* 태그 */}
+  
         <View style={ss.card}>
           <View style={ss.rowBetween}>
             <Text style={ss.cardTitle}>태그</Text>

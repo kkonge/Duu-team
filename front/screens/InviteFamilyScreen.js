@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
-/* ---------- Utils ---------- */
+
 function makeCode(seed) {
   const base = (seed || Date.now())
     .toString(36)
@@ -23,7 +23,7 @@ function makeCode(seed) {
   return (base + "DOGGY").slice(0, 6);
 }
 
-/* ---------- Screen ---------- */
+
 export default function InviteFamilyScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -49,12 +49,12 @@ export default function InviteFamilyScreen() {
   return (
     <SafeAreaView style={s.safe}>
       <View style={s.container}>
-        {/* Top controls (앱 전반 B/W 무드와 정렬) */}
+
         <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
 
-        {/* Header */}
+
         <View style={s.header}>
           <Text style={s.title}>Invite Family</Text>
           <Text style={s.subtitle}>
@@ -62,7 +62,7 @@ export default function InviteFamilyScreen() {
           </Text>
         </View>
 
-        {/* Card */}
+
         <View style={s.card}>
           <Text style={s.sectionTitle}>내 초대코드</Text>
 
@@ -110,7 +110,7 @@ export default function InviteFamilyScreen() {
   );
 }
 
-/* ---------- Design Tokens (Black & White) ---------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";

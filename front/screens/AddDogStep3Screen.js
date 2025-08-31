@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-// 가벼운 로컬 ID 생성기 (타임스탬프 + 시퀀스 + 랜덤)
+
 let __seq = 0;
 function newId() {
   __seq = (__seq + 1) % 1e6;
@@ -30,11 +30,11 @@ export default function AddDogStep3Screen({ navigation, route }) {
     name = "",
     breed = "",
     birth = null,
-    sex = null,          // "male" | "female"
-    size = null,         // "small" | "medium" | "large"
-    weight = null,       // number (kg)
+    sex = null,         
+    size = null,        
+    weight = null,      
     notes = null,
-    // id는 굳이 param에서 받을 필요 없음. 새로 생성.
+
   } = route.params || {};
 
   const birthText = useMemo(() => {
@@ -134,7 +134,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 헤더 (뒤로가기 + 타이틀 + 서브타이틀 + 진행 점) */}
+   
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back-circle" size={32} color="#888" />
@@ -150,7 +150,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
           </View>
         </View>
 
-        {/* 아바타 */}
+   
         <View style={styles.avatarWrap}>
           <View style={styles.avatarShadow}>
             {photo ? (
@@ -163,9 +163,9 @@ export default function AddDogStep3Screen({ navigation, route }) {
           </View>
         </View>
 
-        {/* 카드 */}
+
         <View style={styles.card}>
-          {/* 기본 정보 */}
+    
           <View style={styles.blockHeader}>
             <Text style={styles.blockTitle}>기본 정보</Text>
             <Pressable onPress={onEditStep1} hitSlop={8}>
@@ -176,7 +176,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
           <Row label="견종" value={breed || "-"} />
           <Row label="생년월일" value={birthText} />
 
-          {/* 건강 · 생활 */}
+       
           <View style={[styles.blockHeader, { marginTop: 16 }]}>
             <Text style={styles.blockTitle}>건강 · 생활</Text>
             <Pressable onPress={onEditStep2} hitSlop={8}>
@@ -189,7 +189,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
           <Row label="특이사항" value={notes || "-"} multiline />
         </View>
 
-        {/* 버튼들 */}
+   
         <View style={styles.buttonGroup}>
           <Pressable onPress={onAddAnother} style={({ pressed }) => [styles.btn, styles.btnSecondary, pressed && styles.pressed]}>
             <Ionicons name="add-circle-outline" size={18} color="#111" />
@@ -205,7 +205,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
   );
 }
 
-/* - 재사용 Row 컴포넌트 - */
+
 function Row({ label, value, multiline = false }) {
   return (
     <View style={[styles.rowItem, multiline && { alignItems: "flex-start" }]}>
@@ -220,7 +220,7 @@ function Row({ label, value, multiline = false }) {
   );
 }
 
-/* --------- 디자인 토큰 (블랙/화이트 무드) --------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";
@@ -231,11 +231,11 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: { flex: 1, paddingHorizontal: 28, paddingTop: 20, backgroundColor: BACKGROUND },
 
-  /* 헤더: back 버튼을 헤더 내부 좌상단으로 */
+
   header: { alignItems: "center", gap: 6, marginBottom: 12 },
   backBtn: { alignSelf: "flex-start" },
 
-  /* 진행 점: 헤더 하단(타이틀/서브타이틀 바로 아래) */
+  
   progress: { flexDirection: "row", gap: 6, marginTop: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E5E7EB" },
   dotOn: { backgroundColor: "#111" },

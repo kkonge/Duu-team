@@ -15,7 +15,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-/* --------- Utils --------- */
+
 function getAgeLabel(birth) {
   if (!birth) return "-";
   const d = new Date(birth);
@@ -42,10 +42,10 @@ export default function PuppySelectScreen() {
   const navigation = useNavigation();
   const { users, activeUserId, getUser, isLoaded } = useFamily();
 
-// 활성 사용자(나)
-  const me = getUser(); // activeUserId가 없으면 null
 
-// 가족 배열 (나 제외)
+  const me = getUser(); 
+
+
   const familyList = Object.values(users || {}).filter(u => u.id !== activeUserId);
 
   const userProfileParam = route.params?.userProfile || null;
@@ -99,7 +99,7 @@ export default function PuppySelectScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        {/* Top Controls: Back (left) & Add (right) — 다른 화면과 동일한 위치 */}
+        
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
@@ -111,7 +111,7 @@ export default function PuppySelectScreen() {
           <Text style={styles.addTxt}>Add</Text>
         </Pressable>
 
-        {/* 헤더 */}
+   
         <View style={styles.header}>
           <Text style={styles.title}>Your Family</Text>
           <Text style={styles.subtitle}>
@@ -121,13 +121,13 @@ export default function PuppySelectScreen() {
           </Text>
         </View>
 
-        {/* 목록 / Empty */}
+
         {dogs.length > 0 ? (
           <FlatList
             data={data}
             keyExtractor={(item, idx) => String(item.id || idx)}
             renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 140 }}  // 하단 스트립과 여백 확보
+            contentContainerStyle={{ paddingBottom: 140 }} 
             ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
             showsVerticalScrollIndicator={false}
           />
@@ -147,7 +147,7 @@ export default function PuppySelectScreen() {
           </View>
         )}
 
-        {/* 하단 가족 스트립 (Black & White 무드) */}
+
         <View style={styles.footerStrip}>
           <ScrollView
             horizontal
@@ -172,7 +172,7 @@ export default function PuppySelectScreen() {
     </Text>
   </View>
 ) : (
-  // 로딩 중이거나 아직 사용자 없음
+ 
   <View style={styles.memberItem}>
     <View style={[styles.avatarWrap, styles.avatarPlaceholder]}>
       <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
@@ -181,7 +181,7 @@ export default function PuppySelectScreen() {
   </View>
 )}
 
-{/* Family (나 제외) */}
+
 {(familySafe || []).map((m) => (
   <View key={m.id || m.username || m.nickname} style={styles.memberItem}>
     <View style={styles.avatarWrap}>
@@ -199,7 +199,7 @@ export default function PuppySelectScreen() {
   </View>
 ))}
 
-            {/* Invite */}
+        
             <Pressable
               onPress={() => navigation.navigate("InviteFamily")}
               style={({ pressed }) => [styles.invitePill, pressed && { transform: [{ scale: 0.98 }] }]}
@@ -214,7 +214,7 @@ export default function PuppySelectScreen() {
   );
 }
 
-/* --------- Design Tokens (Black & White) --------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: { flex: 1, backgroundColor: BACKGROUND, paddingHorizontal: 28, paddingTop: 50 },
 
-  /* Top controls (절대 위치: 다른 화면과 동일 높이/여백) */
+
   backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
   addBtn: {
     position: "absolute", top: 10, right: 16, zIndex: 10,
@@ -243,12 +243,12 @@ const styles = StyleSheet.create({
   },
   addTxt: { color: "#fff", fontWeight: "800" },
 
-  /* Header */
+
   header: { alignItems: "center", marginBottom: 12 },
   title: { fontSize: 28, fontWeight: "800", color: PRIMARY, letterSpacing: 0.5 },
   subtitle: { fontSize: 14, color: TEXT_DIM, marginTop: 6 },
 
-  /* Dog card — 크고 시원하게 */
+  
   card: {
     marginTop: 20, 
     flexDirection: "row",
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 15, color: TEXT_DARK, fontWeight: "700" },
   metaDim: { fontSize: 14, color: TEXT_DIM, fontWeight: "600" },
 
-  /* Empty */
+
   emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyIconWrap: {
     width: 64, height: 64, borderRadius: 32,
@@ -328,6 +328,6 @@ const styles = StyleSheet.create({
   },
   inviteTxt: { color: TEXT_DARK, fontWeight: "800" },
 
-  /* Interaction */
+
   pressed: { transform: [{ scale: 0.99 }] },
 });

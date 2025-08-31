@@ -14,7 +14,7 @@ export default function InviteCheckScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        {/* 뒤로가기 */}
+ 
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
@@ -25,19 +25,19 @@ export default function InviteCheckScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           style={{ overflow: "visible" }}
         >
-          {/* 헤더 */}
+     
           <View style={styles.header}>
             <Text style={styles.title}>Family & Invite</Text>
             <Text style={styles.subtitle}>앱을 사용 중인 가족이 있나요?</Text>
           </View>
 
-          {/* 카드 (그림자 래퍼 + 내용 카드 분리) */}
+
           <View style={styles.shadowWrap}>
             <View style={styles.card}>
               <Text style={styles.question}>초대코드로 계정을 연결할 수 있어요.</Text>
 
               <View style={styles.buttonGroup}>
-                {/* Secondary: 처음 시작 */}
+            
                 <Pressable
                   onPress={() => navigation.navigate("AddDogStep1")}
                   style={({ pressed }) => [
@@ -50,7 +50,7 @@ export default function InviteCheckScreen({ navigation }) {
                   <Text style={styles.btnSecondaryTxt}>아니요, 처음이에요</Text>
                 </Pressable>
 
-                {/* Primary: 초대 코드 입력 */}
+       
                 <Pressable
                   onPress={() => navigation.navigate("InviteFamily")}
                   style={({ pressed }) => [
@@ -71,7 +71,7 @@ export default function InviteCheckScreen({ navigation }) {
   );
 }
 
-/* --------- Design tokens --------- */
+
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const CARD_BG = "#fff";
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: {
     flex: 1,
-    paddingTop: 50,             // 상단 여백만 유지
+    paddingTop: 50,       
     backgroundColor: BACKGROUND,
   },
 
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: "800", color: PRIMARY, letterSpacing: 0.5 },
   subtitle: { fontSize: 16, color: "#444", textAlign: "center", opacity: 0.85, lineHeight: 20 },
 
-  /* 그림자 전용 래퍼 */
+  
   shadowWrap: {
     marginTop: 16,
     borderRadius: 22,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  /* 실제 카드(배경/라운드만) */
+
   card: {
     paddingHorizontal: 18,
     paddingVertical: 22,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
 
   buttonGroup: { gap: 12 },
 
-  /* 공통 버튼 */
+  
   btn: {
     height: 47,
     borderRadius: 10,
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
-  /* Secondary: 화이트 아웃라인 */
+ 
   btnSecondary: {
     backgroundColor: "#fff",
     borderColor: BORDER,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
-  /* Primary: 블랙 꽉 찬 버튼 */
+
   btnPrimary: {
     backgroundColor: PRIMARY,
     borderColor: PRIMARY,

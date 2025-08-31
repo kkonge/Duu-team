@@ -46,7 +46,7 @@ export default function LoginSignupScreen({ navigation }) {
           />
         </View>
 
-        {/* 입력 카드 + 버튼들 */}
+
         <View style={styles.bottomContainer}>
           {/* 입력 폼 */}
           <View style={styles.card}>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
 
-  /* 폼 카드 */
+
   card: {
     marginTop:20,
     paddingHorizontal: 18,

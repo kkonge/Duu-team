@@ -16,7 +16,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-/* -------------------- Design tokens -------------------- */
+
 const INK = "#0B0B0B";
 const INK_DIM = "#6B7280";
 const BG = "#FFFFFF";
@@ -31,12 +31,11 @@ const SHADOW = {
   elevation: 3,
 };
 
-/* -------------------- Storage keys -------------------- */
+/* --------- Storage Keys --------- */
 const STORAGE_KEY = "HEALTH_ENTRIES_V1";
-// ✅ DiagnosisResultScreen에서 저장하는 키
 const STORAGE_KEY_ASSESS = "HEALTH_ASSESS_V1";
 
-/* -------------------- Small atoms -------------------- */
+
 function Section({ title, children }) {
   return (
     <View style={[styles.section, SHADOW]}>
@@ -45,7 +44,6 @@ function Section({ title, children }) {
     </View>
   );
 }
-
 function StatTile({ label, value }) {
   return (
     <View style={styles.statTile}>
@@ -55,7 +53,7 @@ function StatTile({ label, value }) {
   );
 }
 
-/* -------------------- Utilities (프론트 전용) -------------------- */
+
 const toNum = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -100,7 +98,7 @@ function levelMeta(tone) {
   }
 }
 
-// AsyncStorage helpers
+
 async function loadEntries() {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
@@ -114,7 +112,6 @@ async function loadEntries() {
 async function saveEntries(list) {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
-// ✅ 최근 진단 로드
 async function loadAssessments() {
   const raw = await AsyncStorage.getItem(STORAGE_KEY_ASSESS);
   if (!raw) return [];
@@ -128,56 +125,46 @@ async function loadAssessments() {
   }
 }
 
-/* -------------------- Health Home -------------------- */
+
+
 export function HealthHome() {
   const nav = useNavigation();
 
-  // 기록 히스토리
   const [entries, setEntries] = useState([]);
-
-  // ✅ 진단 히스토리
   const [assessList, setAssessList] = useState([]);
 
-  // 요약 타일 값
   const latestWeight = useMemo(() => getLatest(entries, "weight"), [entries]);
-  const latestWalk = useMemo(() => getLatest(entries, "walk"), [entries]);
-  const latestCond = useMemo(() => getLatest(entries, "condition"), [entries]);
-  const latestVac = useMemo(() => getLatest(entries, "vaccine"), [entries]);
+  const latestWalk   = useMemo(() => getLatest(entries, "walk"), [entries]);
+  const latestCond   = useMemo(() => getLatest(entries, "condition"), [entries]);
+  const latestVac    = useMemo(() => getLatest(entries, "vaccine"), [entries]);
 
-  const weight = latestWeight ? latestWeight.value : "-";
+  const weight        = latestWeight ? latestWeight.value : "-";
   const recentWalkMin = latestWalk ? latestWalk.value : "-";
-  const condition = latestCond ? latestCond.value : "좋음";
-  const nextVaccine = latestVac ? latestVac.value : "-";
+  const condition     = latestCond ? latestCond.value : "좋음";
+  const nextVaccine   = latestVac ? latestVac.value : "-";
 
-  // 즉석 평가(폴백)
-  const wCls = classifyWeight(weight);
-  const walkCls = classifyWalk(recentWalkMin);
-  const overall = overallAssessment(wCls.tone, walkCls.tone);
+  const wCls   = classifyWeight(weight);
+  const walkCls= classifyWalk(recentWalkMin);
+  const overall= overallAssessment(wCls.tone, walkCls.tone);
 
-  // 최초 진입 시 저장 로드
   useEffect(() => {
     (async () => {
-      const [loadedEntries, loadedAssess] = await Promise.all([
-        loadEntries(),
-        loadAssessments(),
-      ]);
+      const [loadedEntries, loadedAssess] = await Promise.all([loadEntries(), loadAssessments()]);
       setEntries(loadedEntries);
       setAssessList(loadedAssess);
     })();
   }, []);
 
-  // 가장 최근 진단
   const latestAssess = assessList?.[0] || null;
-  const latestMeta = latestAssess ? levelMeta(latestAssess.level) : null;
+  const latestMeta   = latestAssess ? levelMeta(latestAssess.level) : null;
 
-  // 의심 질환 Top 3 (conf 내림차순)
+  // 의심 질환 Top 3
   const topSuspects = useMemo(() => {
     if (!latestAssess?.suspects) return [];
     const arr = Object.values(latestAssess.suspects)
       .flat()
       .filter(Boolean)
       .sort((a, b) => (b.conf || 0) - (a.conf || 0));
-    // 중복 이름 제거
     const seen = new Set();
     const dedup = [];
     for (const it of arr) {
@@ -189,7 +176,7 @@ export function HealthHome() {
     return dedup;
   }, [latestAssess]);
 
-  // 입력 모달 상태
+
   const [openEdit, setOpenEdit] = useState(false);
   const [bufWeight, setBufWeight] = useState("");
   const [bufWalk, setBufWalk] = useState("");
@@ -210,41 +197,17 @@ export function HealthHome() {
 
     const w = toNum(bufWeight);
     if (w !== null) {
-      newOnes.push({
-        id: `${now}-weight`,
-        type: "weight",
-        value: Number(w.toFixed(1)),
-        unit: "kg",
-        ts: now,
-      });
+      newOnes.push({ id: `${now}-weight`, type: "weight", value: Number(w.toFixed(1)), unit: "kg", ts: now });
     }
     const m = toNum(bufWalk);
     if (m !== null) {
-      newOnes.push({
-        id: `${now}-walk`,
-        type: "walk",
-        value: Math.max(0, Math.round(m)),
-        unit: "min",
-        ts: now,
-      });
+      newOnes.push({ id: `${now}-walk`, type: "walk", value: Math.max(0, Math.round(m)), unit: "min", ts: now });
     }
     if (bufCond) {
-      newOnes.push({
-        id: `${now}-cond`,
-        type: "condition",
-        value: bufCond,
-        unit: "",
-        ts: now,
-      });
+      newOnes.push({ id: `${now}-cond`, type: "condition", value: bufCond, unit: "", ts: now });
     }
     if (bufVaccine && /^\d{4}-\d{2}-\d{2}$/.test(bufVaccine)) {
-      newOnes.push({
-        id: `${now}-vac`,
-        type: "vaccine",
-        value: bufVaccine,
-        unit: "",
-        ts: now,
-      });
+      newOnes.push({ id: `${now}-vac`, type: "vaccine", value: bufVaccine, unit: "", ts: now });
     }
 
     if (newOnes.length === 0) {
@@ -258,13 +221,12 @@ export function HealthHome() {
     setOpenEdit(false);
   };
 
+ 
+  const goEvaluation = () => {
+    nav.navigate("Evaluation", { weight, recentWalkMin, condition, nextVaccine });
+  };
   const goDiagnosis = () => {
-    nav.navigate("Diagnosis", {
-      weight,
-      recentWalkMin,
-      condition,
-      nextVaccine,
-    });
+    nav.navigate("Diagnosis", { weight, recentWalkMin, condition, nextVaccine });
   };
 
   return (
@@ -280,28 +242,24 @@ export function HealthHome() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        {/* 요약 카드 */}
+ 
         <Section>
           <Text style={styles.caption}>콩이의 건강 요약</Text>
           <View style={styles.statGrid}>
             <StatTile label="체중" value={weight === "-" ? "-" : `${weight} kg`} />
-            <StatTile
-              label="최근 산책"
-              value={recentWalkMin === "-" ? "-" : `${recentWalkMin} 분`}
-            />
+            <StatTile label="최근 산책" value={recentWalkMin === "-" ? "-" : `${recentWalkMin} 분`} />
             <StatTile label="컨디션" value={condition} />
             <StatTile label="다음 접종" value={nextVaccine} />
           </View>
 
-          {/* 간소화 액션: + 기록하기 */}
           <TouchableOpacity style={styles.simpleAction} onPress={openRecorder}>
             <Ionicons name="add-circle-outline" size={18} color={INK} />
             <Text style={styles.simpleActionText}>기록하기</Text>
           </TouchableOpacity>
         </Section>
 
-        {/* 지표·추이 프리뷰 (탭 → 진단 플로우) */}
-        <Pressable onPress={goDiagnosis}>
+   
+        <Pressable onPress={goEvaluation}>
           <View style={[styles.evalPreviewCard, SHADOW]}>
             <View style={styles.evalPreviewHeader}>
               <Text style={styles.evalPreviewTitle}>지표·추이</Text>
@@ -310,9 +268,7 @@ export function HealthHome() {
 
             <View style={styles.evalRowInline}>
               <Text style={styles.evalInlineLabel}>체중</Text>
-              <Text style={styles.evalInlineValue}>
-                {weight === "-" ? "-" : `${weight} kg`}
-              </Text>
+              <Text style={styles.evalInlineValue}>{weight === "-" ? "-" : `${weight} kg`}</Text>
             </View>
             <View style={styles.evalRowInline}>
               <Text style={styles.evalInlineLabel}>주간 산책</Text>
@@ -332,57 +288,73 @@ export function HealthHome() {
           </View>
         </Pressable>
 
-        {/* ✅ 최근 진단 (DiagnosisResultScreen 저장값 요약) */}
+
         <Section title="최근 진단">
-          {latestAssess ? (
-            <>
-              <View style={styles.assessRow}>
-                <Text style={[styles.assessText, { color: latestMeta.color }]}>
-                  {latestMeta.text} <Text style={styles.assessEmoji}>{latestMeta.emoji}</Text>
-                </Text>
-                <Text style={{ fontSize: 14, color: INK }}>
-                  {latestAssess.scoreOverall} <Text style={{ color: INK_DIM }}>/ 100</Text>
-                </Text>
-              </View>
+          {assessList?.[0] ? (
+            (() => {
+              const latestAssess = assessList[0];
+              const latestMeta = levelMeta(latestAssess.level);
+              const topSuspects = Object.values(latestAssess.suspects || {})
+                .flat()
+                .filter(Boolean)
+                .sort((a, b) => (b.conf || 0) - (a.conf || 0));
+              const seen = new Set();
+              const dedup = [];
+              for (const it of topSuspects) {
+                if (seen.has(it.name)) continue;
+                seen.add(it.name);
+                dedup.push(it);
+                if (dedup.length >= 3) break;
+              }
 
-              {/* 의심 질병 Top 3 */}
-              {topSuspects.length > 0 ? (
-                <View style={styles.badgeRow}>
-                  {topSuspects.map((s, i) => (
-                    <Text
-                      key={`${s.name}-${i}`}
-                      style={[styles.badge, styles.badgeOk]}
-                      numberOfLines={1}
-                    >
-                      {s.name} · {"★".repeat(Math.max(1, Math.min(3, s.conf || 1)))}
+              return (
+                <>
+                  <View style={styles.assessRow}>
+                    <Text style={[styles.assessText, { color: latestMeta.color }]}>
+                      {latestMeta.text} <Text style={styles.assessEmoji}>{latestMeta.emoji}</Text>
                     </Text>
-                  ))}
-                </View>
-              ) : (
-                <Text style={styles.mutedSmall}>의심 질병 표시할 항목이 없어요.</Text>
-              )}
+                    <Text style={{ fontSize: 14, color: INK }}>
+                      {latestAssess.scoreOverall} <Text style={{ color: INK_DIM }}>/ 100</Text>
+                    </Text>
+                  </View>
 
-              {/* 카테고리 하이라이트(선택) */}
-              {latestAssess.perCat ? (
-                <View style={[styles.badgeRow, { marginTop: 8 }]}>
-                  {Object.entries(latestAssess.perCat)
-                    .filter(([, v]) => (v || 0) >= 55)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3)
-                    .map(([k, v]) => (
-                      <Text key={k} style={[styles.badge, v >= 80 ? styles.badgeWarn : styles.badgeMid]}>
-                        {k} · {v}
-                      </Text>
-                    ))}
-                </View>
-              ) : null}
+                  {dedup.length > 0 ? (
+                    <View style={styles.badgeRow}>
+                      {dedup.map((s, i) => (
+                        <Text
+                          key={`${s.name}-${i}`}
+                          style={[styles.badge, styles.badgeOk]}
+                          numberOfLines={1}
+                        >
+                          {s.name} · {"★".repeat(Math.max(1, Math.min(3, s.conf || 1)))}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.mutedSmall}>의심 질병 표시할 항목이 없어요.</Text>
+                  )}
 
-              <Text style={styles.mutedSmall} numberOfLines={2}>
-                최근 자가진단 결과 요약입니다. 상세 근거와 레드플래그는 결과 화면에서 확인하세요.
-              </Text>
-            </>
+                  {latestAssess.perCat ? (
+                    <View style={[styles.badgeRow, { marginTop: 8 }]}>
+                      {Object.entries(latestAssess.perCat)
+                        .filter(([, v]) => (v || 0) >= 55)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([k, v]) => (
+                          <Text key={k} style={[styles.badge, v >= 80 ? styles.badgeWarn : styles.badgeMid]}>
+                            {k} · {v}
+                          </Text>
+                        ))}
+                    </View>
+                  ) : null}
+
+                  <Text style={styles.mutedSmall} numberOfLines={2}>
+                    최근 자가진단 결과 요약입니다. 상세 근거와 레드플래그는 결과 화면에서 확인하세요.
+                  </Text>
+                </>
+              );
+            })()
           ) : (
-            // 폴백: 즉석 평가(체중/산책)
             <>
               <View style={styles.assessRow}>
                 <Text
@@ -440,12 +412,12 @@ export function HealthHome() {
         </Section>
       </ScrollView>
 
-      {/* 하단 큰 CTA */}
+
       <TouchableOpacity style={styles.primaryCta} onPress={goDiagnosis}>
         <Text style={styles.primaryCtaText}>콩이의 건강진단 하러가기</Text>
       </TouchableOpacity>
 
-      {/* 기록하기 모달 */}
+
       <Modal
         visible={openEdit}
         animationType="slide"
@@ -487,7 +459,7 @@ export function HealthHome() {
               />
             </View>
 
-            {/* 컨디션 라디오 */}
+            {/* 컨디션 */}
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>컨디션</Text>
               <View style={styles.radioRow}>
@@ -521,7 +493,7 @@ export function HealthHome() {
               />
             </View>
 
-            {/* 버튼들 */}
+           
             <View style={styles.sheetBtns}>
               <TouchableOpacity style={styles.btnGhost} onPress={() => setOpenEdit(false)}>
                 <Text style={styles.btnGhostText}>취소</Text>
@@ -537,7 +509,7 @@ export function HealthHome() {
   );
 }
 
-/* -------------------- 통합 지표·추이 화면 -------------------- */
+
 export function Evaluation() {
   const nav = useNavigation();
   const route = useRoute();
@@ -588,7 +560,7 @@ export function Evaluation() {
   );
 }
 
-/* -------------------- 작은 컴포넌트 -------------------- */
+
 function ProgressBar({ percent = 50 }) {
   const p = Math.max(0, Math.min(100, isNaN(Number(percent)) ? 0 : Number(percent)));
   return (
@@ -598,7 +570,7 @@ function ProgressBar({ percent = 50 }) {
   );
 }
 
-/* -------------------- Styles -------------------- */
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   header: {
@@ -650,7 +622,6 @@ const styles = StyleSheet.create({
   },
   simpleActionText: { marginLeft: 6, fontSize: 14, fontWeight: "600", color: INK },
 
-  // 지표·추이 프리뷰 카드(홈)
   evalPreviewCard: {
     backgroundColor: CARD,
     borderRadius: 16,
@@ -679,7 +650,6 @@ const styles = StyleSheet.create({
   evalInlineValue: { fontSize: 13, color: INK_DIM },
   evalMiniCaption: { fontSize: 11, color: INK_DIM },
 
-  // ✅ 최근 진단
   assessRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -722,7 +692,6 @@ const styles = StyleSheet.create({
   },
   primaryCtaText: { color: "#fff", fontWeight: "800", fontSize: 16 },
 
-  /* Modal / Bottom sheet */
   modalBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.25)",
@@ -790,7 +759,6 @@ const styles = StyleSheet.create({
   },
   btnPrimaryText: { color: "#FFF", fontWeight: "800" },
 
-  /* Evaluation */
   safeEval: { flex: 1, backgroundColor: SURFACE },
   evalHeader: {
     height: 52,
@@ -834,11 +802,5 @@ const styles = StyleSheet.create({
   shadow: SHADOW,
 });
 
-/* -------------------- Navigation helper -------------------- */
-// 네비게이터 등록 예시:
-// <Stack.Screen name="HealthHome" component={HealthHome} />
-// <Stack.Screen name="Evaluation" component={Evaluation} />
-// <Stack.Screen name="Diagnosis" component={DiagnosisScreen} />
-// <Stack.Screen name="DiagnosisResult" component={DiagnosisResultScreen} />
 
 export default HealthHome;

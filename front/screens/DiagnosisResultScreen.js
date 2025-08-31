@@ -13,17 +13,17 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 질문 리소스(JSON) — 경로를 프로젝트에 맞게 수정
+
 import QDATA from "../questions.json";
 
-/* ---------- Design tokens ---------- */
+
 const INK = "#0B0B0B";
 const INK_DIM = "#6B7280";
 const BG = "#F3F4F6";
 const CARD = "#FFFFFF";
 const BORDER = "#E5E7EB";
 
-/* ---------- Storage ---------- */
+
 const STORAGE_KEY_ASSESS = "HEALTH_ASSESS_V1";
 
 /* ---------- 카테고리 라벨 ---------- */
@@ -106,7 +106,7 @@ function computeResult(answersObj) {
   return { perCat, redFlags, scoreOverall, level, evidence };
 }
 
-/* ---------- 질환 휴리스틱 추정 ---------- */
+/* ---------- 질환 추정 ---------- */
 /** 신뢰도: 1~3 (낮음~높음) */
 function inferSuspicions(answers) {
   const A = (id) => answers[id];
@@ -119,7 +119,7 @@ function inferSuspicions(answers) {
     ENDO: [],
   };
 
-  // ---- GI (소화기)
+  // ---- (소화기)
   const vomit = A("q.gi.vomit");           // 없음/가끔/자주
   const diarrhea = A("q.gi.diarrhea");     // true/false
   const bloody = A("q.gi.bloody_stool");   // true/false
@@ -154,7 +154,7 @@ function inferSuspicions(answers) {
     });
   }
 
-  // ---- RESP (호흡기)
+  // ---- (호흡기)
   const cough = A("q.resp.cough");       // 없음/가끔/자주
   const dysp = A("q.resp.dyspnea");      // true/false
   if (dysp === true) {
@@ -172,7 +172,7 @@ function inferSuspicions(answers) {
     });
   }
 
-  // ---- SKIN (피부)
+  // ----  (피부)
   const itch = A("q.skin.pruritus");    // 없음/가끔/자주
   const hair = A("q.skin.hairloss");    // 없음/가끔/자주
   if (itch === "자주") {
@@ -190,7 +190,7 @@ function inferSuspicions(answers) {
     });
   }
 
-  // ---- MSK (근골격)
+  // ---- (근골격)
   const limp = A("q.msk.limp");
   if (limp === "자주" || limp === "가끔") {
     suspects.MSK.push({
@@ -200,7 +200,7 @@ function inferSuspicions(answers) {
     });
   }
 
-  // ---- ENDO (내분비)
+  // ----  (내분비)
   const poly = A("q.endo.polyuria");        // 없음/가끔/자주
   const wtchg = A("q.prior.weightChange");  // 없음/가끔/자주
   if (poly === "자주") {
@@ -218,7 +218,7 @@ function inferSuspicions(answers) {
     });
   }
 
-  // 정리: 카테고리별 중복 이름 합치기(최대 3개 노출)
+
   const compact = {};
   for (const c of Object.keys(suspects)) {
     const map = new Map();
@@ -231,7 +231,7 @@ function inferSuspicions(answers) {
   return compact;
 }
 
-/* ---------- 저장 유틸 ---------- */
+
 async function saveAssessment(assessment) {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY_ASSESS);
@@ -245,7 +245,7 @@ async function saveAssessment(assessment) {
   }
 }
 
-/* ---------- 레벨 뷰 헬퍼 ---------- */
+
 function levelMeta(tone) {
   switch (tone) {
     case "urgent":
@@ -281,7 +281,7 @@ export default function DiagnosisResultScreen() {
       perCat: result.perCat,
       redFlags: result.redFlags,
       evidence: result.evidence,
-      suspects, // ✅ 의심 질환 스냅샷도 저장
+      suspects, 
       version: QDATA?.version || "1.0.0",
     };
     setSaving(true);
@@ -365,7 +365,7 @@ export default function DiagnosisResultScreen() {
           );
         })}
 
-        {/* ✅ 의심 질환 섹션 */}
+        {/* 의심 질환 */}
         <View style={styles.suspectCard}>
           <Text style={styles.suspectTitle}>의심 질환 (프론트 추정)</Text>
           <Text style={styles.suspectHint}>
@@ -394,7 +394,7 @@ export default function DiagnosisResultScreen() {
           })}
         </View>
 
-        {/* 주의 문구(법적 고지 느낌) */}
+        {/* 주의 문구 */}
         <View style={styles.noticeBox}>
           <Text style={styles.noticeText}>
             이 결과는 의료 진단이 아닌 참고용 자가 체크입니다. 지속/악화되는 증상 또는
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   evidenceWrap: { marginTop: 8, gap: 4 },
   evidenceItem: { fontSize: 12, color: INK },
 
-  /* Suspects */
+
   suspectCard: {
     backgroundColor: CARD,
     borderRadius: 16,

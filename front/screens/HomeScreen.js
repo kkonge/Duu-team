@@ -19,7 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 const { width: SCREEN_W } = Dimensions.get("window");
 const AVATAR = 120;
 
-/* ---------- Utils ---------- */
+
 function getAgeLabel(birth) {
   if (!birth) return "-";
   const d = new Date(birth);
@@ -38,11 +38,11 @@ function getAgeLabel(birth) {
   return `${years}y ${months}m`;
 }
 
-/* ---------- AsyncStorage Keys ---------- */
+
 const LEGACY_KEY = "@diary_local_entries";
 const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || "unknown"}`;
 
-/* ---------- Common: Progress (light) ---------- */
+
 function ProgressBar({ value = 0, total = 1 }) {
   const pct = Math.max(0, Math.min(1, total ? value / total : 0));
   return (
@@ -52,7 +52,7 @@ function ProgressBar({ value = 0, total = 1 }) {
   );
 }
 
-/* ---------- Common: Section Header ---------- */
+
 function SectionHeader({ title, actionLabel, onAction }) {
   return (
     <View style={styles.sectionHeader}>
@@ -66,7 +66,7 @@ function SectionHeader({ title, actionLabel, onAction }) {
   );
 }
 
-/* ---------- Small UI: Chip ---------- */
+
 function Chip({ label, icon, onPress }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.chip, pressed && styles.pressed]}>
@@ -76,7 +76,7 @@ function Chip({ label, icon, onPress }) {
   );
 }
 
-/* ---------- Common: Core Tile ---------- */
+
 function CoreTile({ icon, label, onPress }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tile, pressed && styles.pressed]} hitSlop={6}>
@@ -94,7 +94,7 @@ export default function HomeScreen() {
   const dogId = route.params?.dogId || dog?.id;
   const ageText = useMemo(() => getAgeLabel(dog?.birth), [dog?.birth]);
 
-  /* ---------- Routines (now with category & goalPerDay & progress) ---------- */
+
   const routinesInit = Array.isArray(route.params?.routines)
     ? route.params.routines
     : [
@@ -105,7 +105,7 @@ export default function HomeScreen() {
 
   const [routines, setRoutines] = useState(routinesInit);
 
-  // 루틴 한 번 탭 = +1(최대 goalPerDay까지), 길게 탭 = 0으로 리셋
+
   const bumpRoutine = (id) =>
     setRoutines((prev) =>
       prev.map((r) => {
@@ -118,13 +118,13 @@ export default function HomeScreen() {
   const resetRoutine = (id) =>
     setRoutines((prev) => prev.map((r) => (r.id === id ? { ...r, progress: 0 } : r)));
 
-  // 빠른 추가(프리셋)
+
   const addPreset = (preset) => {
     const id = Date.now().toString();
     setRoutines((prev) => [...prev, { id, ...preset, progress: 0 }]);
   };
 
-  // 직접 추가 입력
+
   const [newRoutine, setNewRoutine] = useState("");
   const [showRoutineInput, setShowRoutineInput] = useState(false);
 
@@ -142,12 +142,12 @@ export default function HomeScreen() {
     setShowRoutineInput(false);
   };
 
-  /* ---------- Quick logs ---------- */
+
   const [extraLogs, setExtraLogs] = useState({ walk: 0, meal: 0, meds: 0 });
   const quickAdd = (category) =>
     setExtraLogs((p) => ({ ...p, [category]: Math.max(0, (p[category] || 0) + 1) }));
 
-  /* ---------- Status ---------- */
+
   const DEFAULT_GOAL = { walk: 1, meal: 2, meds: 1 };
 
   const totalsByCat = useMemo(() => {
@@ -184,26 +184,26 @@ export default function HomeScreen() {
     meds: { done: doneByCat.meds, total: totalsByCat.meds, icon: "medkit-outline", label: "약", key: "meds" },
   };
 
-  /* ---------- Gallery: 최신 일기 사진 3장 (강아지별 + 레거시 호환) ---------- */
+  /* ---------- Gallery---------- */
   const [latest3, setLatest3] = useState([]); // [{uri, date}]
 
   const loadLatestPhotos = useCallback(async () => {
     try {
-      // per-dog 저장본
+     
       const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
       const byDog = rawByDog ? JSON.parse(rawByDog) : [];
 
-      // 레거시(공용) 저장본에서 해당 dogId만
+
       const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
       const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
       const legacyForDog = legacy.filter((e) => !dogId || e.dogId === dogId);
 
-      // 병합 후 최신순 정렬
+
       const merged = [...byDog, ...legacyForDog].sort(
         (a, b) => new Date(b.date || 0) - new Date(a.date || 0)
       );
 
-      // 사진만 펼쳐서 최신 3장
+      //최신 3장
       const flat = [];
       merged.forEach((entry) => {
         const d = entry.date || 0;
@@ -220,12 +220,11 @@ export default function HomeScreen() {
     }
   }, [dogId]);
 
-  // 최초 로드
+
   useEffect(() => {
     loadLatestPhotos();
   }, [loadLatestPhotos]);
 
-  // 포커스될 때마다 갱신(일기 작성 후 복귀 등)
   useFocusEffect(
     useCallback(() => {
       loadLatestPhotos();
@@ -234,11 +233,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* 풀블리드 히어로 배경 */}
+
       <View style={styles.heroBg} />
 
       <View style={styles.container}>
-        {/* 상단바 */}
+
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
             <Ionicons name="chevron-back" size={20} color="#fff" />
@@ -250,10 +249,10 @@ export default function HomeScreen() {
         </View>
 
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-          {/* 히어로 */}
-          <View style={styles.hero}>
+  
+         <View style={styles.hero}>
             <View style={styles.heroRow}>
-              {/* 원형 아바타 */}
+          
               <View style={styles.avatarRing}>
                 <View style={styles.avatarMask}>
                   {dog?.imageUri ? (
@@ -278,7 +277,7 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* 히어로 상태 + 퀵액션 */}
+
             <View style={styles.statusWrapHero}>
               {["walk", "meal", "meds"].map((k) => {
                 const s = status[k];
@@ -294,7 +293,7 @@ export default function HomeScreen() {
                       <Text style={styles.statusValueHero}>
                         {s.done}/{s.total}
                       </Text>
-                      {/* 퀵액션 + */}
+                    
                       <Pressable onPress={() => quickAdd(k)} style={({ pressed }) => [styles.plusTiny, pressed && styles.pressed]} hitSlop={6}>
                         <Ionicons name="add" size={14} color="#111" />
                       </Pressable>
@@ -309,9 +308,9 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* 시트 */}
+        
           <View style={styles.sheet}>
-            {/* Core 기능 */}
+         
             <View style={styles.coreGrid}>
               <CoreTile icon="book-outline" label="Diary" onPress={() => navigation.navigate("Diary", { selectedDog: dog, dogId })} />
               <CoreTile icon="walk-outline" label="Walk" onPress={() => navigation.navigate("Walk")} />
@@ -319,10 +318,10 @@ export default function HomeScreen() {
               <CoreTile icon="calendar-outline" label="Calendar" onPress={() => navigation.navigate("Calendar")} />
             </View>
 
-            {/* 루틴: 프리셋 & 리스트 */}
+ 
             <SectionHeader title="Pet Routines" />
 
-            {/* 프리셋 칩 (빠른 추가) */}
+   
             <View style={styles.presetRow}>
               <Chip label="산책(1회/일)" icon="footsteps-outline" onPress={() => addPreset({ label: "산책", category: "walk", goalPerDay: 1 })} />
               <Chip label="식사(2회/일)" icon="restaurant-outline" onPress={() => addPreset({ label: "식사", category: "meal", goalPerDay: 2 })} />
@@ -401,7 +400,7 @@ export default function HomeScreen() {
               )}
             </View>
 
-            {/* 갤러리 (최신 일기 사진 3장) */}
+    
             <SectionHeader
               title="Recent Memories"
               actionLabel={latest3.length ? "더보기" : undefined}
@@ -472,7 +471,7 @@ export default function HomeScreen() {
   );
 }
 
-/* ---------- Design Tokens ---------- */
+
 const BG = "#fff";
 const BORDER = "#E5E7EB";
 const TEXT = "#111827";
@@ -497,7 +496,7 @@ const styles = StyleSheet.create({
   heroBg: { ...StyleSheet.absoluteFillObject, backgroundColor: HERO_BG, height: 530 },
   container: { flex: 1 },
 
-  /* Top bar */
+ 
   topBar: {
     paddingHorizontal: 18,
     marginTop: 8,
@@ -518,7 +517,7 @@ const styles = StyleSheet.create({
   },
   appTitle: { flex: 1, textAlign: "center", fontSize: 14, fontWeight: "900", color: "#fff", letterSpacing: 2 },
 
-  /* Hero */
+
   hero: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 28 },
   heroRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 4 },
 
@@ -566,7 +565,7 @@ const styles = StyleSheet.create({
   },
   badgeDim: { opacity: 0.85 },
 
-  /* Status in hero */
+
   statusWrapHero: {
     marginTop: 16,
     padding: 12,
@@ -598,19 +597,19 @@ const styles = StyleSheet.create({
   },
   barFillHero: { height: "100%", backgroundColor: "#fff" },
 
-  /* Progress (light) for cards */
+
   barWrap: { flex: 1, height: 8, borderRadius: 8, backgroundColor: "#F3F4F6", overflow: "hidden", borderWidth: 1, borderColor: "#EFEFEF" },
   barFill: { height: "100%", backgroundColor: "#111" },
 
-  /* Sheet */
+
   sheet: { marginTop: 0, paddingTop: 18, paddingBottom: 24, paddingHorizontal: 18, borderTopLeftRadius: 28, borderTopRightRadius: 28, backgroundColor: BG },
 
-  /* Section header */
+
   sectionHeader: { marginTop: 10, marginBottom: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   sectionTitle: { fontSize: 16, color: TEXT, fontWeight: "900" },
   sectionAction: { fontSize: 13, color: TEXT_DIM, fontWeight: "800" },
 
-  /* Core grid */
+
   coreGrid: { marginTop: 20, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 12, marginBottom: -90 },
   tile: {
     width: (SCREEN_W - 18 * 2 - 12) / 2,
@@ -623,7 +622,7 @@ const styles = StyleSheet.create({
   },
   tileLabel: { fontSize: 16, fontWeight: "800", color: TEXT },
 
-  /* Chip row */
+
   presetRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10, marginTop: 4 },
   chip: {
     flexDirection: "row",
@@ -638,11 +637,11 @@ const styles = StyleSheet.create({
   },
   chipText: { fontSize: 12, fontWeight: "800", color: "#111" },
 
-  /* Card */
+  
   card: { padding: 12, ...CARD_BASE, marginBottom: 30 },
   emptyDim: { textAlign: "center", color: TEXT_DIM, fontWeight: "700", marginVertical: 6 },
 
-  /* Routines */
+
   routineRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12, borderBottomWidth: 1, borderColor: "#F1F5F9" },
   routineTxt: { color: TEXT, fontWeight: "800", flexShrink: 1 },
   routineCount: { color: TEXT, fontWeight: "900", width: 50, textAlign: "right" },
@@ -669,7 +668,7 @@ const styles = StyleSheet.create({
   /* Memo */
   memoInput: { minHeight: 80, textAlignVertical: "top", color: TEXT, fontWeight: "700" },
 
-  /* Bottom Tab */
+  /*Tab */
   tabBar: {
     position: "absolute",
     left: 18,
@@ -693,6 +692,6 @@ const styles = StyleSheet.create({
   tabCenter: { width: 54, height: 54, borderRadius: 27, borderWidth: 1, borderColor: BORDER, backgroundColor: "#fff" },
   tabActive: { backgroundColor: "#F9FAFB" },
 
-  /* Interaction */
+
   pressed: { transform: [{ scale: 0.98 }] },
 });
