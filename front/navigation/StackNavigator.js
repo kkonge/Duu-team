@@ -21,6 +21,15 @@ import DiaryView from '../screens/DiaryView';
 import DiaryDetailScreen from '../screens/DiaryDetailScreen';
 import GalleryView from '../screens/GalleryView';
 import SignupSuccessScreen from '../screens/SignupSuccessScreen';
+import HealthCareScreen from '../screens/HealthCareScreen';
+import EvaluationScreen from '../screens/EvaluationScreen';
+import DiagnosisScreen from '../screens/DiagnoisisScreen';
+import DiagnosisResultScreen from '../screens/DiagnosisResultScreen';
+
+
+
+
+
 
 const Stack= createNativeStackNavigator();
 
@@ -48,6 +57,16 @@ export default function StackNavigator(){
             <Stack.Screen name='DiaryDetail' component={DiaryDetailScreen} />
             <Stack.Screen name='GalleryView' component={GalleryView} />
             <Stack.Screen name='SignupSuccess' component={SignupSuccessScreen} />
+            <Stack.Screen name='HealthCare' component={HealthCareScreen} />
+            <Stack.Screen name='Evaluation' component={EvaluationScreen} />
+            <Stack.Screen name='DiagnosisResult' component={DiagnosisResultScreen} />
+            <Stack.Screen name='Diagnosis' component={DiagnosisScreen} />
+
+
+    
+           
+            
+           
             
 
 

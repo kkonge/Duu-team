@@ -1,8 +1,10 @@
+//App.tsx
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import StackNavigator from './navigation/StackNavigator';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
+import { FamilyProvider } from './context/FamilyContext'; // ★ 추가
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -17,13 +19,13 @@ export default function App() {
     'Pretendard-Black': require('./assets/fonts/Pretendard-Black.ttf'),
   });
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
-  }
+  if (!fontsLoaded) return <AppLoading />;
 
   return (
-    <NavigationContainer>
-      <StackNavigator />
-    </NavigationContainer>
+    <FamilyProvider> {/* ★ 여기로 전체 감싸기 */}
+      <NavigationContainer>
+        <StackNavigator />
+      </NavigationContainer>
+    </FamilyProvider>
   );
 }

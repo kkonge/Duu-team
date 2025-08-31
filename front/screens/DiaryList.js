@@ -1,5 +1,6 @@
-
+// screens/DiaryList.js
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useFamily } from "../context/FamilyContext";
 import {
   View, Text, SectionList, Image, TouchableOpacity, ActivityIndicator,
   RefreshControl, StyleSheet, Dimensions,
@@ -7,9 +8,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
-const LOCAL_KEY = "@diary_local_entries";
+const LEGACY_KEY = "@diary_local_entries"; // 레거시(공용) 키
 const { width: SCREEN_W } = Dimensions.get("window");
-
 
 const BG = "#fff";
 const BORDER = "#E5E7EB";
@@ -24,29 +24,50 @@ const CARD_SHADOW = {
   elevation: 3,
 };
 
-
 const LIST_HPAD = 16;
 const CARD_PAD   = 12;
 const CONTENT_W  = SCREEN_W - (LIST_HPAD * 2) - (CARD_PAD * 2);
-/* 안정적 비율(약 16:9 근사) */
 const GRID_H     = Math.round(CONTENT_W * 0.52);
 
-export default function DiaryList({ onPressItem, onPressWrite }) {
+// ✨ 강아지별 키
+const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || "unknown"}`;
+
+export default function DiaryList({ dogId, onPressItem, onPressWrite }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const { activeUserId } = useFamily();
+
   const loadLocal = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(LOCAL_KEY);
-    const local = raw ? JSON.parse(raw) : [];
-    local.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
-    return local;
-  }, []);
+    // 1) 강아지별 키에서 불러오기
+    const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
+    const byDog = rawByDog ? JSON.parse(rawByDog) : [];
+
+    // 2) 레거시 공용 키에서 불러온 뒤, dogId로 필터(호환)
+    const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
+    const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
+    const legacyForDog = legacy.filter(e => !dogId || e.dogId === dogId);
+
+    // 병합(중복 방지: id 기준)
+    const map = new Map();
+    [...byDog, ...legacyForDog].forEach(e => map.set(String(e.id), e));
+    const merged = Array.from(map.values());
+
+    merged.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+    return merged;
+  }, [dogId]);
 
   const fetchAll = useCallback(async () => {
     const local = await loadLocal();
-    setItems(local);
-  }, [loadLocal]);
+    // 레거시 호환: authorId 없으면 activeUserId로 채움
+    const fixed = local.map(e => ({
+      ...e,
+      dogId: e.dogId ?? dogId,
+      authorId: e.authorId ?? activeUserId,
+    }));
+    setItems(fixed);
+  }, [loadLocal, dogId, activeUserId]);
 
   useEffect(() => {
     (async () => {
@@ -88,9 +109,14 @@ export default function DiaryList({ onPressItem, onPressWrite }) {
         <Text style={{ marginTop: 8, color: TEXT_DIM, fontWeight: "700" }}>
           아직 작성된 일기가 없어요
         </Text>
-        <TouchableOpacity style={s.ghostBtn} onPress={onPressWrite} activeOpacity={0.9}>
-          <Ionicons name="add" size={18} color={TEXT} />
-          <Text style={{ color: TEXT, fontWeight: "900", marginLeft: 6 }}>첫 일기 쓰기</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={() => onPressWrite?.(dogId)}     // ★ 현재 강아지로 작성
+          activeOpacity={0.92}
+          style={s.primaryBtn}
+        >
+          <Ionicons name="create-outline" size={18} color="#fff" />
+          <Text style={s.primaryBtnTxt}>첫 일기 쓰기</Text>
         </TouchableOpacity>
       </View>
     );
@@ -100,8 +126,11 @@ export default function DiaryList({ onPressItem, onPressWrite }) {
     <View style={{ flex: 1 }}>
       <SectionList
         sections={sections}
-        keyExtractor={(it) => String(it.id)}
-        renderItem={({ item }) => <DiaryCard item={item} onPress={() => onPressItem?.(item)} />}
+        keyExtractor={(it, idx) => String(it.id ?? `${dogId}-${idx}`)}
+        extraData={dogId}
+        renderItem={({ item }) => (
+          <DiaryCard item={item} onPress={() => onPressItem?.(item, dogId)} />
+        )}
         renderSectionHeader={({ section: { title } }) => (
           <View style={s.sectionHeader}>
             <View style={s.sectionLine} />
@@ -114,9 +143,12 @@ export default function DiaryList({ onPressItem, onPressWrite }) {
         contentContainerStyle={{ paddingBottom: 180, paddingTop: 6 }}
       />
 
-
       <View pointerEvents="box-none" style={s.fabWrap}>
-        <TouchableOpacity style={s.fab} onPress={onPressWrite} activeOpacity={0.9}>
+        <TouchableOpacity
+          style={s.fab}
+          onPress={() => onPressWrite?.(dogId)}     // ★ 현재 강아지로 작성
+          activeOpacity={0.9}
+        >
           <Ionicons name="create-outline" size={20} color="#fff" />
           <Text style={s.fabTxt}>  새 일기 쓰기</Text>
         </TouchableOpacity>
@@ -125,35 +157,52 @@ export default function DiaryList({ onPressItem, onPressWrite }) {
   );
 }
 
+/** 작성자 뱃지: authorId → 전역에서 닉네임/아바타 조회 */
+function AuthorBadge({ authorId, fallbackName, timeText }) {
+  const { getUser } = useFamily();
+  const u = getUser(authorId); // authorId 없으면 activeUser
+
+  const name = u?.nickname || u?.username || fallbackName || "AUTHOR";
+  const uri  = u?.photoUri;
+
+  return (
+    <View style={s.avatarRow}>
+      {uri ? (
+        <Image source={{ uri }} style={s.avatar} />
+      ) : (
+        <View style={[s.avatar, { alignItems: "center", justifyContent: "center" }]}>
+          <Ionicons name="person-outline" size={16} color="#9AA4AF" />
+        </View>
+      )}
+      <View style={{ marginLeft: 10 }}>
+        <Text style={s.author}>{name}</Text>
+        <Text style={s.timeText}>{timeText}</Text>
+      </View>
+    </View>
+  );
+}
+
 function DiaryCard({ item, onPress }) {
-  const photos = Array.isArray(item.photos) ? item.photos.filter(Boolean) : [];
-  const authorName = item.authorName || "AUTHOR";
+  const photos   = Array.isArray(item.photos) ? item.photos.filter(Boolean) : [];
   const timeText = toYmdHm(item.date);
-  const mood = item.mood;
-  const tags = item.tags || [];
+  const mood     = item.mood;
+  const tags     = item.tags || [];
 
   return (
     <View style={s.cardWrap}>
       <TouchableOpacity style={s.card} activeOpacity={0.85} onPress={onPress}>
         {/* 헤더 */}
         <View style={s.rowBetween}>
-          <View style={s.avatarRow}>
-            <View style={s.avatar} />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={s.author}>{authorName}</Text>
-              <Text style={s.timeText}>{timeText}</Text>
-            </View>
-          </View>
-          {!!mood && <MoodChip mood={mood} />}
+          <AuthorBadge
+            authorId={item.authorId}
+            fallbackName={item.authorName}
+            timeText={timeText}
+          />
+        {!!mood && <MoodChip mood={mood} />}
         </View>
 
-
         {!!item.text && <Text style={s.bodyText} numberOfLines={3}>{item.text}</Text>}
-
-   
         {!!photos.length && <PhotoGrid photos={photos} />}
-
-   
         {!!tags.length && (
           <View style={s.tagsRow}>
             {tags.slice(0, 3).map((t) => (
@@ -168,7 +217,7 @@ function DiaryCard({ item, onPress }) {
   );
 }
 
-
+/* ---- 사진 그리드 ---- */
 function PhotoGrid({ photos }) {
   const list = photos.slice(0, 4);
   const extra = photos.length - list.length;
@@ -212,7 +261,6 @@ function PhotoGrid({ photos }) {
         </Wrap>
       )}
 
- 
       <View style={s.countBadge}>
         <Ionicons name="images-outline" size={12} color="#fff" />
         <Text style={s.countTxt}>{photos.length}</Text>
@@ -220,7 +268,6 @@ function PhotoGrid({ photos }) {
     </View>
   );
 }
-
 
 function Block({ w, h, uri }) {
   return (
@@ -301,6 +348,24 @@ function toYmdHm(iso) {
 const s = StyleSheet.create({
   center: { justifyContent: "center", alignItems: "center" },
 
+  // 🚀 비어있는 상태 CTA
+  primaryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 12,
+    paddingHorizontal: 16,
+    height: 46,
+    borderRadius: 999,
+    backgroundColor: "#111",
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
+  },
+  primaryBtnTxt: { color: "#fff", fontWeight: "900", letterSpacing: 0.2 },
+
   sectionHeader: {
     flexDirection: "row", alignItems: "center", gap: 10,
     paddingHorizontal: LIST_HPAD, marginTop: 12, marginBottom: 10,
@@ -343,8 +408,6 @@ const s = StyleSheet.create({
 
   moodChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, borderWidth: 1, borderColor: BORDER, backgroundColor: SOFT, flexDirection: "row", alignItems: "center", gap: 6 },
   moodTxt: { fontSize: 11, fontWeight: "900", color: TEXT },
-
-  ghostBtn: { marginTop: 12, flexDirection: "row", alignItems: "center", backgroundColor: SOFT, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, borderWidth: 1, borderColor: BORDER },
 
   fabWrap: { position: "absolute", right: 16, bottom: 28, zIndex: 20 },
   fab: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, height: 46, borderRadius: 23, backgroundColor: "#111", ...CARD_SHADOW },

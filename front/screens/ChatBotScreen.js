@@ -180,9 +180,7 @@ export default function ChatBotScreen() {
                 </Pressable>
               ))}
             </View>
-            <TouchableOpacity style={styles.chipsClose} onPress={() => setShowChips(false)}>
-              <Ionicons name="close" size={14} color={TEXT_DIM} />
-            </TouchableOpacity>
+           
           </View>
         )}
 

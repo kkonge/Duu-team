@@ -1,3 +1,5 @@
+// screens/PuppySelectScreen.js
+import { useFamily } from "../context/FamilyContext";
 import React, { useMemo } from "react";
 import {
   View,
@@ -38,11 +40,22 @@ function getAgeLabel(birth) {
 export default function PuppySelectScreen() {
   const route = useRoute();
   const navigation = useNavigation();
+  const { users, activeUserId, getUser, isLoaded } = useFamily();
+
+// 활성 사용자(나)
+  const me = getUser(); // activeUserId가 없으면 null
+
+// 가족 배열 (나 제외)
+  const familyList = Object.values(users || {}).filter(u => u.id !== activeUserId);
+
+  const userProfileParam = route.params?.userProfile || null;
+  const familyProfilesParam = Array.isArray(route.params?.familyProfiles) ? route.params.familyProfiles : [];
+
+  const meSafe = me || userProfileParam || null;
+  const familySafe = (isLoaded && familyList.length >= 0) ? familyList : familyProfilesParam;
 
   const dogs = Array.isArray(route.params?.dogProfiles) ? route.params.dogProfiles : [];
-  const userProfile = route.params?.userProfile || null;
-  const familyProfiles = Array.isArray(route.params?.familyProfiles) ? route.params.familyProfiles : [];
-
+ 
   const data = useMemo(() => dogs, [dogs]);
 
   const renderItem = ({ item }) => {
@@ -53,7 +66,11 @@ export default function PuppySelectScreen() {
 
     return (
       <Pressable
-        onPress={() => navigation.navigate("Home", { selectedDog: item })}
+        onPress={() => navigation.navigate({
+          name: "Home",
+          key: `Home-${item.id}`,   
+          params: { selectedDog: item, dogId: item.id },
+        })}
         style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       >
         <View style={styles.thumb}>
@@ -139,41 +156,48 @@ export default function PuppySelectScreen() {
           >
 
 
-          {/* Me */}
-        <View style={styles.memberItem}>
-          <View style={styles.avatarWrap}>
-           {userProfile?.photoUri || userProfile?.photo || userProfile?.imageUri ? (
-          <Image
-            source={{ uri: userProfile.photoUri || userProfile.photo || userProfile.imageUri }}
-           style={styles.avatar}
-          />
-          ) : (
-           <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
-         </View>
-        )}
-       </View>
-        <Text numberOfLines={1} style={styles.avatarName}>
-           {userProfile?.name || "Me"}
-        </Text>
+          {(meSafe) ? (
+  <View style={styles.memberItem}>
+    <View style={styles.avatarWrap}>
+      {meSafe.photoUri ? (
+        <Image source={{ uri: meSafe.photoUri }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+          <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
         </View>
-            
+      )}
+    </View>
+    <Text numberOfLines={1} style={styles.avatarName}>
+      {meSafe.nickname || meSafe.username || "Me"}
+    </Text>
+  </View>
+) : (
+  // 로딩 중이거나 아직 사용자 없음
+  <View style={styles.memberItem}>
+    <View style={[styles.avatarWrap, styles.avatarPlaceholder]}>
+      <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
+    </View>
+    <Text numberOfLines={1} style={styles.avatarName}>Me</Text>
+  </View>
+)}
 
-            {/* Family */}
-            {familyProfiles.map((m) => (
-              <View key={m.id || m.name} style={styles.memberItem}>
-                <View style={styles.avatarWrap}>
-                  {m.photoUri ? (
-                    <Image source={{ uri: m.photoUri }} style={styles.avatar} />
-                  ) : (
-                    <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                      <Ionicons name="person-outline" size={16} color="#9AA4AF" />
-                    </View>
-                  )}
-                </View>
-                <Text numberOfLines={1} style={styles.avatarName}>{m.name}</Text>
-              </View>
-            ))}
+{/* Family (나 제외) */}
+{(familySafe || []).map((m) => (
+  <View key={m.id || m.username || m.nickname} style={styles.memberItem}>
+    <View style={styles.avatarWrap}>
+      {m.photoUri ? (
+        <Image source={{ uri: m.photoUri }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+          <Ionicons name="person-outline" size={16} color="#9AA4AF" />
+        </View>
+      )}
+    </View>
+    <Text numberOfLines={1} style={styles.avatarName}>
+      {m.nickname || m.username || "Member"}
+    </Text>
+  </View>
+))}
 
             {/* Invite */}
             <Pressable

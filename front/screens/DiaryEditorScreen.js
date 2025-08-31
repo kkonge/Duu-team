@@ -1,3 +1,4 @@
+// screens/DiaryEditorScreen.js
 import React, { useEffect, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, Image,
@@ -7,10 +8,10 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const LOCAL_KEY = "@diary_local_entries";
-const DRAFT_KEY = "@diary_draft";
-const PROFILE_NAME_KEY = "@profile_name";
-const PROFILE_EMAIL_KEY = "@profile_email";
+// 🔑 강아지별 키 네임스페이스
+const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || "unknown"}`;
+const DRAFT_KEY = (dogId) => `@diary_draft:${dogId || "unknown"}`;
+// (레거시 참고용) const LEGACY_KEY = "@diary_local_entries";
 
 const BG = "#fff";
 const BORDER = "#E5E7EB";
@@ -32,17 +33,18 @@ const MOOD_OPTIONS = [
 ];
 
 export default function DiaryEditorScreen({ navigation, route }) {
-  const selectedDog = route.params?.selectedDog;
+  const selectedDog = route.params?.selectedDog || null;
+  const dogId = route.params?.dogId || selectedDog?.id || null;
 
-  const [text, setText]   = useState("");
+  const [text, setText]     = useState("");
   const [images, setImages] = useState([]);
-  const [mood, setMood]   = useState(null);
-  const [tags, setTags]   = useState([]);
+  const [mood, setMood]     = useState(null);
+  const [tags, setTags]     = useState([]);
 
-  // 드래프트 복구
+  // 🔁 드래프트 복구 (강아지별)
   useEffect(() => {
     (async () => {
-      const draftRaw = await AsyncStorage.getItem(DRAFT_KEY);
+      const draftRaw = await AsyncStorage.getItem(DRAFT_KEY(dogId));
       if (!draftRaw) return;
       try {
         const d = JSON.parse(draftRaw);
@@ -54,15 +56,15 @@ export default function DiaryEditorScreen({ navigation, route }) {
         }
       } catch {}
     })();
-  }, []);
+  }, [dogId]);
 
-  // 오토세이브
+  // 📝 오토세이브 (강아지별)
   useEffect(() => {
     const timer = setTimeout(() => {
-      AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ text, images, mood, tags }));
+      AsyncStorage.setItem(DRAFT_KEY(dogId), JSON.stringify({ text, images, mood, tags }));
     }, 400);
     return () => clearTimeout(timer);
-  }, [text, images, mood, tags]);
+  }, [text, images, mood, tags, dogId]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -93,33 +95,37 @@ export default function DiaryEditorScreen({ navigation, route }) {
 
   const onSave = async () => {
     try {
+      if (!dogId) {
+        Alert.alert("알림", "강아지 정보를 찾을 수 없어요. 다시 시도해 주세요.");
+        return;
+      }
       if (!text.trim() && images.length === 0) {
         Alert.alert("알림", "내용 또는 사진을 추가해주세요.");
         return;
       }
-      const raw = await AsyncStorage.getItem(LOCAL_KEY);
-      const list = raw ? JSON.parse(raw) : [];
 
-      const authorName = (await AsyncStorage.getItem(PROFILE_NAME_KEY)) || "AUTHOR";
-      const authorEmail = (await AsyncStorage.getItem(PROFILE_EMAIL_KEY)) || "user@example.com";
+      // ⛳️ 강아지별 키에서 불러오기
+      const raw = await AsyncStorage.getItem(LOCAL_KEY(dogId));
+      const list = raw ? JSON.parse(raw) : [];
 
       const now = new Date();
       const entry = {
         id: `local_${now.getTime()}`,
+        dogId,                     // 🔴 반드시 포함
         date: now.toISOString(),
         text,
         photos: images.map((it) => it.uri),
         tags,
         mood,
-        authorName,
-        authorEmail,
         __local: true,
       };
 
       const next = [entry, ...list];
-      await AsyncStorage.setItem(LOCAL_KEY, JSON.stringify(next));
-      await AsyncStorage.removeItem(DRAFT_KEY);
-      navigation.navigate("Diary", { didSave: true, selectedDog });
+      await AsyncStorage.setItem(LOCAL_KEY(dogId), JSON.stringify(next));
+      await AsyncStorage.removeItem(DRAFT_KEY(dogId));
+
+      // 돌아갈 때도 dogId 함께 전달 (DiaryScreen이 리로드 트리거함)
+      navigation.navigate("Diary", { didSave: true, selectedDog, dogId });
     } catch (e) {
       console.error(e);
       Alert.alert("오류", "저장에 실패했습니다.");

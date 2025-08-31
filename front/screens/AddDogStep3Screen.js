@@ -1,3 +1,4 @@
+// screens/AddDogStep3Screen.js
 import React, { useMemo } from "react";
 import {
   View,
@@ -10,6 +11,15 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
+// 가벼운 로컬 ID 생성기 (타임스탬프 + 시퀀스 + 랜덤)
+let __seq = 0;
+function newId() {
+  __seq = (__seq + 1) % 1e6;
+  return `${Date.now().toString(36)}_${__seq}_${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
 
 export default function AddDogStep3Screen({ navigation, route }) {
   const {
@@ -24,6 +34,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
     size = null,         // "small" | "medium" | "large"
     weight = null,       // number (kg)
     notes = null,
+    // id는 굳이 param에서 받을 필요 없음. 새로 생성.
   } = route.params || {};
 
   const birthText = useMemo(() => {
@@ -50,7 +61,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
     size === "large" ? "대형견" : "-";
 
   const newDog = {
-    id: `${Date.now()}`,
+    id: newId(),
     name,
     breed,
     birth,

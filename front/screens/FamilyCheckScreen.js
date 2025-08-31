@@ -52,7 +52,7 @@ export default function InviteCheckScreen({ navigation }) {
 
                 {/* Primary: 초대 코드 입력 */}
                 <Pressable
-                  onPress={() => navigation.navigate("UserProfile")}
+                  onPress={() => navigation.navigate("InviteFamily")}
                   style={({ pressed }) => [
                     styles.btn,
                     styles.btnPrimary,

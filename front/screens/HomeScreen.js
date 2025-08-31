@@ -1,5 +1,5 @@
 // screens/HomeScreen.js
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
   TextInput,
   Dimensions,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width: SCREEN_W } = Dimensions.get("window");
@@ -36,6 +37,10 @@ function getAgeLabel(birth) {
   if (years <= 0) return `${months}m`;
   return `${years}y ${months}m`;
 }
+
+/* ---------- AsyncStorage Keys ---------- */
+const LEGACY_KEY = "@diary_local_entries";
+const LOCAL_KEY = (dogId) => `@diary_local_entries:${dogId || "unknown"}`;
 
 /* ---------- Common: Progress (light) ---------- */
 function ProgressBar({ value = 0, total = 1 }) {
@@ -86,6 +91,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
 
   const dog = route.params?.selectedDog || {};
+  const dogId = route.params?.dogId || dog?.id;
   const ageText = useMemo(() => getAgeLabel(dog?.birth), [dog?.birth]);
 
   /* ---------- Routines (now with category & goalPerDay & progress) ---------- */
@@ -95,7 +101,6 @@ export default function HomeScreen() {
         { id: "r1", label: "아침 산책", category: "walk", goalPerDay: 1, progress: 0 },
         { id: "r2", label: "아침 사료", category: "meal", goalPerDay: 2, progress: 1 },
         { id: "r3", label: "저녁 사료", category: "meal", goalPerDay: 2, progress: 1 },
-        // 약은 예시로 비워둠
       ];
 
   const [routines, setRoutines] = useState(routinesInit);
@@ -126,7 +131,6 @@ export default function HomeScreen() {
   const addRoutineManual = () => {
     const label = newRoutine.trim();
     if (!label) return;
-    // 간단 규칙으로 카테고리 추론
     const lower = label.toLowerCase();
     let category = "other";
     if (/산책|walk/.test(lower)) category = "walk";
@@ -138,12 +142,12 @@ export default function HomeScreen() {
     setShowRoutineInput(false);
   };
 
-  /* ---------- Quick logs (상단에서 바로 + 한 기록: 루틴 없는 경우도 카운트) ---------- */
+  /* ---------- Quick logs ---------- */
   const [extraLogs, setExtraLogs] = useState({ walk: 0, meal: 0, meds: 0 });
   const quickAdd = (category) =>
     setExtraLogs((p) => ({ ...p, [category]: Math.max(0, (p[category] || 0) + 1) }));
 
-  /* ---------- Status 계산: done = 루틴 progress 합 + extraLogs, total = 루틴 goal 합 or 기본 ---------- */
+  /* ---------- Status ---------- */
   const DEFAULT_GOAL = { walk: 1, meal: 2, meds: 1 };
 
   const totalsByCat = useMemo(() => {
@@ -180,16 +184,53 @@ export default function HomeScreen() {
     meds: { done: doneByCat.meds, total: totalsByCat.meds, icon: "medkit-outline", label: "약", key: "meds" },
   };
 
-  /* ---------- Gallery & Activity (as-is) ---------- */
-  const gallery = Array.isArray(dog?.gallery) ? dog.gallery : dog?.imageUri ? [dog.imageUri] : [];
-  const gallery3 = gallery.slice(0, 3);
+  /* ---------- Gallery: 최신 일기 사진 3장 (강아지별 + 레거시 호환) ---------- */
+  const [latest3, setLatest3] = useState([]); // [{uri, date}]
 
-  const activityLog = Array.isArray(route.params?.activityLog)
-    ? route.params.activityLog
-    : [
-        { id: "a1", who: "Me", text: "저녁 산책 완료", time: "19:42" },
-        { id: "a2", who: "Mom", text: "사료 80g 급여", time: "08:10" },
-      ];
+  const loadLatestPhotos = useCallback(async () => {
+    try {
+      // per-dog 저장본
+      const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
+      const byDog = rawByDog ? JSON.parse(rawByDog) : [];
+
+      // 레거시(공용) 저장본에서 해당 dogId만
+      const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
+      const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
+      const legacyForDog = legacy.filter((e) => !dogId || e.dogId === dogId);
+
+      // 병합 후 최신순 정렬
+      const merged = [...byDog, ...legacyForDog].sort(
+        (a, b) => new Date(b.date || 0) - new Date(a.date || 0)
+      );
+
+      // 사진만 펼쳐서 최신 3장
+      const flat = [];
+      merged.forEach((entry) => {
+        const d = entry.date || 0;
+        (entry.photos || []).forEach((uri) => {
+          if (uri) flat.push({ uri, date: d });
+        });
+      });
+      flat.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+      setLatest3(flat.slice(0, 3));
+    } catch (e) {
+      console.warn("loadLatestPhotos error:", e);
+      setLatest3([]);
+    }
+  }, [dogId]);
+
+  // 최초 로드
+  useEffect(() => {
+    loadLatestPhotos();
+  }, [loadLatestPhotos]);
+
+  // 포커스될 때마다 갱신(일기 작성 후 복귀 등)
+  useFocusEffect(
+    useCallback(() => {
+      loadLatestPhotos();
+    }, [loadLatestPhotos])
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -272,9 +313,9 @@ export default function HomeScreen() {
           <View style={styles.sheet}>
             {/* Core 기능 */}
             <View style={styles.coreGrid}>
-              <CoreTile icon="book-outline" label="Diary" onPress={() => navigation.navigate("Diary")} />
+              <CoreTile icon="book-outline" label="Diary" onPress={() => navigation.navigate("Diary", { selectedDog: dog, dogId })} />
               <CoreTile icon="walk-outline" label="Walk" onPress={() => navigation.navigate("Walk")} />
-              <CoreTile icon="heart-outline" label="Care" onPress={() => navigation.navigate("Care", { selectedDog: dog })} />
+              <CoreTile icon="heart-outline" label="Care" onPress={() => navigation.navigate("HealthCare", { selectedDog: dog })} />
               <CoreTile icon="calendar-outline" label="Calendar" onPress={() => navigation.navigate("Calendar")} />
             </View>
 
@@ -360,22 +401,26 @@ export default function HomeScreen() {
               )}
             </View>
 
-            {/* 갤러리 */}
-            <SectionHeader title="Recent Memories" actionLabel={gallery3.length ? "더보기" : undefined} onAction={() => navigation.navigate("Diary")} />
+            {/* 갤러리 (최신 일기 사진 3장) */}
+            <SectionHeader
+              title="Recent Memories"
+              actionLabel={latest3.length ? "더보기" : undefined}
+              onAction={() => navigation.navigate("Diary", { selectedDog: dog, dogId })}
+            />
             <View style={styles.galleryRow}>
-              {gallery3.length === 0 ? (
+              {latest3.length === 0 ? (
                 <View style={[styles.galleryBox, styles.galleryPlaceholder]}>
                   <Ionicons name="image-outline" size={22} color="#9AA4AF" />
                   <Text style={styles.galleryDim}>사진이 없어요</Text>
                 </View>
               ) : (
-                gallery3.map((uri, idx) => (
+                latest3.map((p, idx) => (
                   <Pressable
-                    key={`${uri}-${idx}`}
-                    onPress={() => navigation.navigate("Diary")}
+                    key={`${p.uri}-${idx}`}
+                    onPress={() => navigation.navigate("Diary", { selectedDog: dog, dogId })}
                     style={({ pressed }) => [styles.galleryBox, pressed && styles.pressed]}
                   >
-                    <Image source={{ uri }} style={styles.galleryImg} />
+                    <Image source={{ uri: p.uri }} style={styles.galleryImg} />
                   </Pressable>
                 ))
               )}
@@ -384,10 +429,10 @@ export default function HomeScreen() {
             {/* 가족 활동 */}
             <SectionHeader title="Family Activities" />
             <View style={styles.card}>
-              {activityLog.length === 0 ? (
+              {(route.params?.activityLog || []).length === 0 ? (
                 <Text style={styles.emptyDim}>아직 활동 로그가 없어요</Text>
               ) : (
-                activityLog.map((a) => (
+                (route.params?.activityLog || []).map((a) => (
                   <View key={a.id} style={styles.logRow}>
                     <View style={styles.logDot} />
                     <Text style={styles.logText}>
@@ -413,7 +458,10 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("Id")}>
           <Ionicons name="person-outline" size={22} color="#111" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tabBtn, styles.tabCenter, styles.tabActive]} onPress={() => navigation.navigate("Home", { selectedDog: dog })}>
+        <TouchableOpacity
+          style={[styles.tabBtn, styles.tabCenter, styles.tabActive]}
+          onPress={() => navigation.navigate("Home", { selectedDog: dog, dogId })}
+        >
           <Ionicons name="home-outline" size={22} color="#111" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("ChatBot")}>

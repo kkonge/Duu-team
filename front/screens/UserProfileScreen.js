@@ -1,4 +1,7 @@
 import React, { useState, memo } from "react";
+import * as FileSystem from "expo-file-system";
+import { useFamily } from "../context/FamilyContext";
+
 import {
   View,
   Text,
@@ -37,6 +40,7 @@ const Divider = memo(function Divider({ styles }) {
 
 export default function UserProfileScreen() {
   const navigation = useNavigation();
+  const { upsertUser, setActiveUserId } = useFamily();
   const [photo, setPhoto] = useState(null);
   const [nickname, setNickname] = useState("");
   const [username, setUsername] = useState("");
@@ -70,18 +74,32 @@ export default function UserProfileScreen() {
     if (date) setDob(date);
   };
 
-  const onContinue = () => {
-    const userProfile = {
-      id: "me",
-      name: nickname || username,
-      username,
-      nickname,
-      gender,
-      dob: dob ? dob.toISOString() : null,
-      photoUri: photo || null, // 👈 PuppySelect에서 photoUri, photo, imageUri 순으로 fallback 처리하면 더 안전
-    };
-    navigation.navigate("FamilyCheck", { userProfile, familyProfiles: [], dogProfiles: [] });
-  };
+  const onContinue = async () => {
+  const safeUri = await persistImageIfNeeded(photo);
+  const myId = "me"; // 로그인 붙이면 서버 userId로 대체
+
+  await upsertUser({
+    id: myId,
+    nickname: nickname || username || "사용자",
+    username,
+    photoUri: safeUri,
+  });
+  await setActiveUserId(myId);
+
+  // 파라미터로 userProfile 안 넘겨도 됨(전역에서 읽을 거라서)
+  navigation.navigate("FamilyCheck");
+};
+   async function persistImageIfNeeded(uri) {
+  if (!uri) return null;
+  if (uri.startsWith(FileSystem.documentDirectory)) return uri;
+  const dest = FileSystem.documentDirectory + `avatar_${Date.now()}.jpg`;
+  try {
+    await FileSystem.copyAsync({ from: uri, to: dest });
+    return dest;
+  } catch {
+    return uri;
+  }
+}
 
   return (
     <SafeAreaView style={styles.safe}>

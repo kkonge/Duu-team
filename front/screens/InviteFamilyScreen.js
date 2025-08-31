@@ -1,23 +1,37 @@
-
+// screens/InviteFamilyScreen.js
 import React, { useMemo } from "react";
 import {
-  View, Text, StyleSheet, TouchableOpacity, Pressable,
-  SafeAreaView, Alert, Share
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  SafeAreaView,
+  Alert,
+  Share,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
+/* ---------- Utils ---------- */
 function makeCode(seed) {
-  const base = (seed || Date.now()).toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "");
-  return (base + "DOGGY").slice(0, 6); 
+  const base = (seed || Date.now())
+    .toString(36)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+  return (base + "DOGGY").slice(0, 6);
 }
 
+/* ---------- Screen ---------- */
 export default function InviteFamilyScreen() {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const myInviteCode = useMemo(() => route.params?.myInviteCode || makeCode(), [route.params]);
+  const myInviteCode = useMemo(
+    () => route.params?.myInviteCode || makeCode(),
+    [route.params]
+  );
 
   const onCopyMyCode = async () => {
     await Clipboard.setStringAsync(myInviteCode);
@@ -26,42 +40,67 @@ export default function InviteFamilyScreen() {
 
   const onShareMyCode = async () => {
     try {
-      await Share.share({ message: `우리 가족에 합류해줘! 초대코드: ${myInviteCode}` });
+      await Share.share({
+        message: `우리 가족에 합류해줘! 초대코드: ${myInviteCode}`,
+      });
     } catch {}
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
-  
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back-circle" size={32} color="#2D5D9F" />
+    <SafeAreaView style={s.safe}>
+      <View style={s.container}>
+        {/* Top controls (앱 전반 B/W 무드와 정렬) */}
+        <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
 
-        <View style={styles.header}>
-          <Text style={styles.title}>Invite Family</Text>
-          <Text style={styles.subtitle}>내 초대코드를 공유해서 가족을 초대하세요</Text>
+        {/* Header */}
+        <View style={s.header}>
+          <Text style={s.title}>Invite Family</Text>
+          <Text style={s.subtitle}>
+            내 초대코드를 공유해서 가족을 초대하세요
+          </Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>내 초대코드</Text>
+        {/* Card */}
+        <View style={s.card}>
+          <Text style={s.sectionTitle}>내 초대코드</Text>
 
-          <View style={styles.myCodeBox}>
-            <Text style={styles.myCode}>{myInviteCode}</Text>
+          <View style={s.codeBox}>
+            <Text style={s.codeText}>{myInviteCode}</Text>
 
-            <View style={styles.myCodeBtns}>
-              <Pressable onPress={onCopyMyCode} style={({ pressed }) => [styles.secBtn, pressed && styles.pressed]}>
-                <Ionicons name="copy-outline" size={16} color="#2D5D9F" />
-                <Text style={styles.secBtnTxt}>Copy</Text>
+            <View style={s.btnRow}>
+              <Pressable
+                onPress={onCopyMyCode}
+                hitSlop={6}
+                style={({ pressed }) => [
+                  s.secBtn,
+                  pressed && s.pressed,
+                ]}
+              >
+                <Ionicons name="copy-outline" size={16} color={TEXT_DARK} />
+                <Text style={s.secBtnTxt}>Copy</Text>
               </Pressable>
-              <Pressable onPress={onShareMyCode} style={({ pressed }) => [styles.secBtn, pressed && styles.pressed]}>
-                <Ionicons name="share-social-outline" size={16} color="#2D5D9F" />
-                <Text style={styles.secBtnTxt}>Share</Text>
+
+              <Pressable
+                onPress={onShareMyCode}
+                hitSlop={6}
+                style={({ pressed }) => [
+                  s.secBtn,
+                  pressed && s.pressed,
+                ]}
+              >
+                <Ionicons
+                  name="share-social-outline"
+                  size={16}
+                  color={TEXT_DARK}
+                />
+                <Text style={s.secBtnTxt}>Share</Text>
               </Pressable>
             </View>
           </View>
 
-          <Text style={styles.helperText}>
+          <Text style={s.helper}>
             가족에게 이 코드를 보내 가입하도록 안내하세요.{"\n"}
             (초대코드 입력 기능은 초기 가입 플로우에서만 제공됩니다)
           </Text>
@@ -71,59 +110,82 @@ export default function InviteFamilyScreen() {
   );
 }
 
-const CARD_BG = "#fff";
+/* ---------- Design Tokens (Black & White) ---------- */
+const PRIMARY = "#000";
+const BACKGROUND = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT_DARK = "#111827";
+const TEXT_DIM = "#6B7280";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EAF2FB", paddingHorizontal: 16, paddingTop: 8 },
-  backButton: { position: "absolute", top: 10, left: 12, zIndex: 10 },
+const CARD_SHADOW = {
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+};
 
-  header: { alignItems: "center", paddingTop: 38, paddingBottom: 8 },
-  title: { fontSize: 22, fontWeight: "800", color: "#2D5D9F" },
-  subtitle: { marginTop: 2, color: "#4F6D99", fontSize: 13, textAlign: "center" },
+/* ---------- Styles ---------- */
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: BACKGROUND },
+  container: { flex: 1, backgroundColor: BACKGROUND, paddingHorizontal: 28, paddingTop: 20 },
+
+  backBtn: { alignSelf: "flex-start" },
+
+  header: { alignItems: "center", marginTop: 6, marginBottom: 10 },
+  title: { fontSize: 26, fontWeight: "800", color: PRIMARY, letterSpacing: 0.3 },
+  subtitle: { marginTop: 6, fontSize: 14, color: TEXT_DIM, textAlign: "center" },
 
   card: {
     marginTop: 12,
-    padding: 16,
-    borderRadius: 24,
-    backgroundColor: CARD_BG,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 20,
+    borderRadius: 20,
+    backgroundColor: BACKGROUND,
+    borderWidth: 1,
+    borderColor: BORDER,
+    ...CARD_SHADOW,
   },
 
-  sectionTitle: { color: "#1B3C78", fontWeight: "800", marginBottom: 10 },
+  sectionTitle: { fontSize: 15, fontWeight: "900", color: TEXT_DARK, marginBottom: 10 },
 
-  myCodeBox: {
+  codeBox: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#C6D9F2",
-    backgroundColor: "#F0F6FF",
+    borderColor: BORDER,
+    backgroundColor: "#F9FAFB",
     padding: 14,
   },
-  myCode: { fontSize: 28, fontWeight: "900", color: "#1B3C78", letterSpacing: 2, textAlign: "center" },
-
-  myCodeBtns: {
-    marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 10,
+  codeText: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: TEXT_DARK,
+    letterSpacing: 6,
+    textAlign: "center",
+    paddingVertical: 6,
   },
+
+  btnRow: { marginTop: 12, flexDirection: "row", justifyContent: "center", gap: 10 },
   secBtn: {
     height: 40,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#C6D9F2",
-    backgroundColor: "#E5F0FB",
+    borderColor: BORDER,
+    backgroundColor: BACKGROUND,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
-  secBtnTxt: { color: "#2D5D9F", fontWeight: "700" },
+  secBtnTxt: { color: TEXT_DARK, fontWeight: "800" },
 
-  helperText: { marginTop: 10, color: "#4F6D99", fontSize: 12, textAlign: "center", lineHeight: 18 },
+  helper: {
+    marginTop: 12,
+    color: TEXT_DIM,
+    fontSize: 12,
+    textAlign: "center",
+    lineHeight: 18,
+  },
 
-  pressed: { transform: [{ scale: 0.99 }] },
+  pressed: { transform: [{ scale: 0.98 }] },
 });

@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "categories": {
+    "GI": "소화기",
+    "RESP": "호흡기",
+    "SKIN": "피부",
+    "MSK": "근골격",
+    "ENDO": "내분비/대사",
+    "PRIOR": "사전위험"
+  },
+  "questions": [
+    {
+      "id": "q.prior.age8",
+      "text": "강아지 나이가 8살 이상인가요?",
+      "type": "bool",
+      "tags": ["PRIOR"],
+      "weight": 1
+    },
+    {
+      "id": "q.prior.vax",
+      "text": "최근 1년 내 예방접종 또는 구충을 하지 않았나요?",
+      "type": "bool",
+      "tags": ["PRIOR"],
+      "weight": 1
+    },
+    {
+      "id": "q.prior.weightChange",
+      "text": "최근 1~2개월 사이 체중 변화가 있었나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["PRIOR", "ENDO"],
+      "weight": 1
+    },
+
+    {
+      "id": "q.gi.vomit",
+      "text": "지난 2주 내 구토가 있었나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["GI"],
+      "weight": 1
+    },
+    {
+      "id": "q.gi.diarrhea",
+      "text": "설사가 3일 이상 지속되었나요?",
+      "type": "bool",
+      "tags": ["GI"],
+      "weight": 1
+    },
+    {
+      "id": "q.gi.bloody_stool",
+      "text": "혈변 또는 검은 변(타르변)이 있었나요?",
+      "type": "bool",
+      "tags": ["GI"],
+      "weight": 1.3,
+      "redFlag": true,
+      "showIf": {
+        "any": [
+          { "qid": "q.gi.vomit", "is": "자주" },
+          { "qid": "q.gi.diarrhea", "is": true }
+        ]
+      }
+    },
+
+    {
+      "id": "q.resp.cough",
+      "text": "기침/헐떡임이 잦나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["RESP"],
+      "weight": 1
+    },
+    {
+      "id": "q.resp.dyspnea",
+      "text": "호흡이 곤란하거나 혀 색이 파랗게 변한 적이 있나요?",
+      "type": "bool",
+      "tags": ["RESP"],
+      "weight": 1.3,
+      "redFlag": true
+    },
+
+    {
+      "id": "q.skin.pruritus",
+      "text": "피부를 자주 긁거나 붉은 발적이 보이나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["SKIN"],
+      "weight": 1
+    },
+    {
+      "id": "q.skin.hairloss",
+      "text": "탈모/비듬/진물이 보이나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["SKIN"],
+      "weight": 1
+    },
+
+    {
+      "id": "q.msk.limp",
+      "text": "절뚝거리거나 점프/계단을 힘들어하나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["MSK"],
+      "weight": 1
+    },
+
+    {
+      "id": "q.endo.polyuria",
+      "text": "물을 많이 마시거나 소변량이 늘었나요?",
+      "type": "choice",
+      "opts": ["없음", "가끔", "자주"],
+      "tags": ["ENDO"],
+      "weight": 1
+    }
+  ]
+}

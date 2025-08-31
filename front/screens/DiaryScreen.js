@@ -1,3 +1,4 @@
+// screens/DiaryScreen.js
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   SafeAreaView,
@@ -25,13 +26,16 @@ const CARD_SHADOW = {
   shadowOffset: { width: 0, height: 6 },
   elevation: 3,
 };
-const LOCAL_KEY = "@diary_local_entries";
+const LEGACY_KEY = "@diary_local_entries";   // 레거시 공용
+const LOCAL_KEY = (id) => `@diary_local_entries:${id || "unknown"}`;
+
 const DIARY_KEY = "@diary_tab_is_diary";
 
 export default function DiaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const selectedDog = route.params?.selectedDog;
+  const dogId = route.params?.dogId ?? selectedDog?.id;
 
   const [diary, setDiary] = useState(true);
   const [stats, setStats] = useState({ total: 0, week: 0, photos: 0 });
@@ -64,8 +68,13 @@ export default function DiaryScreen() {
   const calcStats = useCallback(async () => {
     setLoadingStats(true);
     try {
-      const raw = await AsyncStorage.getItem(LOCAL_KEY);
-      const list = raw ? JSON.parse(raw) : [];
+      const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
+      const byDog = rawByDog ? JSON.parse(rawByDog) : [];
+      // 2) 레거시 호환: 같은 dogId만
+      const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
+      const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
+      const list = [...byDog, ...legacy.filter(e => e.dogId === dogId)];
+
       const now = new Date();
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - now.getDay()); 
@@ -80,7 +89,7 @@ export default function DiaryScreen() {
     } finally {
       setLoadingStats(false);
     }
-  }, []);
+  }, [dogId]);
   useEffect(() => {
     calcStats();
   }, [reloadKey, calcStats]);
@@ -117,20 +126,17 @@ export default function DiaryScreen() {
    
     <View style={styles.statPill}>
       <Ionicons name="calendar-outline" size={14} color={TEXT} />
-      <Text style={styles.statPillTxt}>이번 주 · 0</Text>
+      <Text style={styles.statPillTxt}>이번 주 · {stats.week}</Text>
     </View>
     <View style={styles.statPill}>
       <Ionicons name="image-outline" size={14} color={TEXT} />
-      <Text style={styles.statPillTxt}>사진 · 3</Text>
+      <Text style={styles.statPillTxt}>사진 · {stats.photos}</Text>
     </View>
     <View style={styles.statPill}>
       <Ionicons name="book-outline" size={14} color={TEXT} />
-      <Text style={styles.statPillTxt}>전체 · 2</Text>
+      <Text style={styles.statPillTxt}>전체 · {stats.total}</Text>
     </View>
   </View>
-
-
- 
 </View>
 
 
@@ -155,11 +161,12 @@ export default function DiaryScreen() {
         {diary ? (
           <DiaryList
             key={reloadKey}
-            onPressItem={(entry) => navigation.navigate('DiaryDetail', { diaryId: entry.id })}
-            onPressWrite={() => navigation.navigate('DiaryEditor')}
+            dogId={dogId}
+            onPressItem={(entry,dogIdParam) => navigation.navigate('DiaryDetail', { diaryId: entry.id, dogId: dogIdParam })}
+            onPressWrite={(dogIdParam) => navigation.navigate('DiaryEditor', { dogId: dogIdParam, selectedDog })}
           />
         ) : (
-          <GalleryView />
+          <GalleryView dogId={dogId} reloadKey={reloadKey} />
         )}
       </View>
 
