@@ -454,7 +454,7 @@ export default function HomeScreen() {
 
       {/* 하단 탭 */}
       <View style={styles.tabBar}>
-        <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("Id")}>
+        <TouchableOpacity style={styles.tabBtn} onPress={() => navigation.navigate("IdCard")}>
           <Ionicons name="person-outline" size={22} color="#111" />
         </TouchableOpacity>
         <TouchableOpacity

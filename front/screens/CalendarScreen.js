@@ -110,7 +110,7 @@ export default function CalendarScreen({ navigation, onBack }) {
   const handleBack = () => {
     if (navigation?.goBack) navigation.goBack();
     else if (typeof onBack === 'function') onBack();
-    else setSelectedDate(''); 
+    else setSelectedDate('');
   };
 
   const onChange = (payload) => setText(payload);
@@ -189,21 +189,16 @@ export default function CalendarScreen({ navigation, onBack }) {
   })();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF6E9' }}>
-      <StatusBar style='auto' />
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
+      <StatusBar style='light' />
       // 상단바
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={handleBack} style={styles.iconBtn}>
-          <Ionicons name='chevron-back' size={22} color='#5B7F6A' />
+          <Ionicons name='chevron-back' size={20} color='#fff' />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{selectedDate || 'Today'}</Text>
         <TouchableOpacity onPress={() => {}} style={styles.iconBtn}>
-          <Ionicons
-            name='ellipsis-horizontal-circle'
-            size={22}
-            color='#5B7F6A'
-          />
+          <Ionicons name='ellipsis-horizontal' size={20} color='#fff' />
         </TouchableOpacity>
       </View>
       <ScrollView>
@@ -241,7 +236,7 @@ export default function CalendarScreen({ navigation, onBack }) {
                     style={[
                       dayCell.dayNum,
                       isSelected && { color: 'grey' },
-                      isToday && { color: 'green' , fontWeight : '800'}, 
+                      isToday && { color: '#007AFF', fontWeight: '800' },
                     ]}
                   >
                     {date.day}
@@ -269,14 +264,12 @@ export default function CalendarScreen({ navigation, onBack }) {
             }}
           />
         </View>
-
-
         {!!selectedDate && (
           <ScrollView
             contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
           >
             // 체중
-            <View
+            {/* <View
               style={{ flexDirection: 'row', justifyContent: 'space-between' }}
             >
               <Text style={detailStyles.title}>Today's Weight</Text>
@@ -293,8 +286,7 @@ export default function CalendarScreen({ navigation, onBack }) {
               placeholder='체중 입력 (kg)'
               returnKeyType='done'
               onSubmitEditing={saveWeight}
-            />
-
+            /> */}
             // todos
             <Text style={detailStyles.title}>To Do List</Text>
             <TextInput
@@ -305,7 +297,6 @@ export default function CalendarScreen({ navigation, onBack }) {
               placeholder='Add a To Do'
               style={detailStyles.input}
             />
-
             <View>
               {Object.keys(toDos).map((key) => (
                 <View
@@ -408,7 +399,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 8,
     paddingBottom: 6,
-    backgroundColor: '#EEF6E9',
+    backgroundColor: '#000',
   },
   iconBtn: {
     width: 36,
@@ -416,11 +407,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EAF4EE',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: '#D7E8DB',
+    borderColor: 'rgba(255,255,255,0.16)',
   },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#5B7F6A' },
+  headerTitle: { fontSize: 20, fontWeight: '900', color: '#fff' },
 });
 
 const dayCell = StyleSheet.create({
@@ -433,19 +424,19 @@ const dayCell = StyleSheet.create({
     paddingHorizontal: 2,
     borderRadius: 10,
   },
-  selectedWrap: { backgroundColor: '#EEF6E9' },
+  selectedWrap: { backgroundColor: '#dee2e6' },
   dayNum: { fontSize: 14, color: '#111', fontWeight: '600', lineHeight: 18 },
   todoText: { marginTop: 2, fontSize: 10, color: '#666', maxWidth: 42 },
 });
 
 const calendarStyles = StyleSheet.create({
-  container: { backgroundColor: '#EEF6E9' },
+  container: { backgroundColor: '#000' },
   calendar: { marginHorizontal: 20, borderRadius: 15, marginTop: 20 },
 });
 
 const detailStyles = StyleSheet.create({
   date: { fontSize: 28, fontWeight: 'bold', marginTop: 10, marginBottom: 10 },
-  title: { fontSize: 20, fontWeight: '800', marginTop: 20 , color : '#5B7F6A'},
+  title: { fontSize: 20, fontWeight: '800', marginTop: 20, color: '#fff' },
   input: {
     backgroundColor: 'white',
     paddingVertical: 12,
