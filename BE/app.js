@@ -11,6 +11,8 @@ const FamilyFunction= require('./family.js');
 const animalHospital = require('./animalHospital.js');
 const petFacility = require('./petFacility.js');
 const trashBin = require('./trashbin.js');
+const router = express.Router();
+const health = require('./health.js');
 
 app.use(express.json());
 app.use(cors());
@@ -142,6 +144,15 @@ app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
   }
   next();
 });
+
+//건강관리 파트
+app.post('/api/health/summary', usersFunction.verifyToken, health.saveHealthData);
+
+app.get('/api/health/recent', usersFunction.verifyToken, health.getRecentHealth);
+
+app.post('/api/health/check', usersFunction.verifyToken, health.saveSelfCheck);
+
+app.get('/api/health/check/history', usersFunction.verifyToken, health.getSelfCheckHistory);
 
 app.listen(3000,()=>{
   console.log('server is running on 3000 port');
