@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, memo } from "react";
+import * as FileSystem from "expo-file-system";
+import { useFamily } from "../context/FamilyContext";
+
 import {
   View,
   Text,
@@ -11,14 +14,33 @@ import {
   SafeAreaView,
   Image,
   Modal,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+/* --------------------- 외부 선언 --------------------- */
+const InputRow = memo(function InputRow({ icon, children, styles }) {
+  return (
+    <View style={styles.inputWrap}>
+      <View style={styles.leftIcon} pointerEvents="none">
+        <Ionicons name={icon} size={18} color="#94A3B8" />
+      </View>
+      {children}
+    </View>
+  );
+});
+
+const Divider = memo(function Divider({ styles }) {
+  return <View style={styles.divider} />;
+});
+/* ----------------------------------------------------- */
+
 export default function UserProfileScreen() {
   const navigation = useNavigation();
+  const { upsertUser, setActiveUserId } = useFamily();
   const [photo, setPhoto] = useState(null);
   const [nickname, setNickname] = useState("");
   const [username, setUsername] = useState("");
@@ -52,217 +74,223 @@ export default function UserProfileScreen() {
     if (date) setDob(date);
   };
 
-  const onContinue = () => {
-    const userProfile = {
-      id: "me",
-      name: nickname || username,
-      username,
-      nickname,
-      gender,
-      dob: dob ? dob.toISOString() : null,
-      photoUri: photo || null,
-    };
+  const onContinue = async () => {
+  const safeUri = await persistImageIfNeeded(photo);
+  const myId = "me"; // 로그인 붙이면 서버 userId로 대체
 
-    const familyProfiles = [];
+  await upsertUser({
+    id: myId,
+    nickname: nickname || username || "사용자",
+    username,
+    photoUri: safeUri,
+  });
+  await setActiveUserId(myId);
 
-    navigation.navigate("FamilyCheck", {
-      userProfile,
-      familyProfiles,
-      dogProfiles: [],
-    });
-  };
+  // 파라미터로 userProfile 안 넘겨도 됨(전역에서 읽을 거라서)
+  navigation.navigate("FamilyCheck");
+};
+   async function persistImageIfNeeded(uri) {
+  if (!uri) return null;
+  if (uri.startsWith(FileSystem.documentDirectory)) return uri;
+  const dest = FileSystem.documentDirectory + `avatar_${Date.now()}.jpg`;
+  try {
+    await FileSystem.copyAsync({ from: uri, to: dest });
+    return dest;
+  } catch {
+    return uri;
+  }
+}
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.select({ ios: "padding", android: undefined })}
-        style={styles.flex}
+        style={styles.container}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back-circle" size={32} color="#7B8A7A" />
+
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
 
-        <View style={styles.header}>
-          <Text style={styles.title}>About You</Text>
-          <Text style={styles.tagline}>당신의 프로필을 작성해주세요!</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+    
+          <View style={styles.header}>
+            <Text style={styles.title}>About You</Text>
+            <Text style={styles.subtitle}>당신의 프로필을 작성해주세요!</Text>
 
 
-          <View style={styles.avatarWrap}>
-            <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
-              <View style={styles.avatarShadow}>
-                {photo ? (
-                  <Image source={{ uri: photo }} style={styles.avatar} />
-                ) : (
-                  <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                    <Ionicons
-                      name="person-circle-outline"
-                      size={72}
-                      color="#A3B3D6"
-                    />
+            <View style={styles.avatarWrap}>
+              <TouchableOpacity onPress={pickImage} activeOpacity={0.85}>
+                <View style={styles.avatarShadow}>
+                  {photo ? (
+                    <Image source={{ uri: photo }} style={styles.avatar} />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                      <Ionicons name="person-circle-outline" size={72} color="#C3C3C3" />
+                    </View>
+                  )}
+                  <View style={styles.cameraBadge}>
+                    <Ionicons name="camera" size={16} color="#fff" />
                   </View>
-                )}
-                <View style={styles.cameraBadge}>
-                  <Ionicons name="camera" size={16} color="#fff" />
                 </View>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.form}>
-          <Text style={styles.label}>UserName</Text>
-          <TextInput
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter your username"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-          />
-          <Text style={styles.label}>NickName</Text>
-          <TextInput
-            value={nickname}
-            onChangeText={setNickname}
-            placeholder="Enter your nickname"
-            style={styles.input}
-            returnKeyType="next"
-          />
-
-          <Text style={styles.label}>Date Of Birth</Text>
-          <Pressable style={styles.input} onPress={() => setShowDate(true)}>
-            <Text style={{ color: dob ? "#111827" : "#9AA4AF" }}>
-              {dob ? dob.toISOString().slice(0, 10) : "YYYY-MM-DD"}
-            </Text>
-          </Pressable>
-
-          <View style={styles.genderRow}>
-            <Pressable
-              style={[
-                styles.genderBtn,
-                gender === "male" && styles.genderBtnOn,
-              ]}
-              onPress={() => setGender("male")}
-            >
-              <View
-                style={[styles.radio, gender === "male" && styles.radioOn]}
-              >
-                {gender === "male" && <View style={styles.radioDot} />}
-              </View>
-              <Text
-                style={[
-                  styles.genderTxt,
-                  gender === "male" && styles.genderTxtOn,
-                ]}
-              >
-                Male
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.genderBtn,
-                gender === "female" && styles.genderBtnOn,
-              ]}
-              onPress={() => setGender("female")}
-            >
-              <View
-                style={[styles.radio, gender === "female" && styles.radioOn]}
-              >
-                {gender === "female" && <View style={styles.radioDot} />}
-              </View>
-              <Text
-                style={[
-                  styles.genderTxt,
-                  gender === "female" && styles.genderTxtOn,
-                ]}
-              >
-                Female
-              </Text>
-            </Pressable>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <View style={styles.bottomRow}>
+       
+          <View style={styles.card}>
+     
+            <Text style={styles.label}>이름</Text>
+            <InputRow icon="person-outline" styles={styles}>
+              <TextInput
+                value={username}
+                onChangeText={setUsername}
+                placeholder="이름 입력"
+                placeholderTextColor="#9AA4AF"
+                autoCapitalize="none"
+                style={styles.input}
+                returnKeyType="next"
+              />
+            </InputRow>
+
+     
+            <Text style={styles.label}>별명</Text>
+            <InputRow icon="happy-outline" styles={styles}>
+              <TextInput
+                value={nickname}
+                onChangeText={setNickname}
+                placeholder="별명 입력"
+                placeholderTextColor="#9AA4AF"
+                style={styles.input}
+                returnKeyType="next"
+              />
+            </InputRow>
+
+            <Divider styles={styles} />
+
+  
+            <Text style={styles.sectionTitle}>생년월일</Text>
+            <Pressable onPress={() => setShowDate(true)}>
+              <InputRow icon="calendar-outline" styles={styles}>
+                <View style={[styles.input, styles.inputReadonly]}>
+                  <Text style={{ color: dob ? "#111827" : "#9AA4AF", fontSize: 15 }}>
+                    {dob ? dob.toISOString().slice(0, 10) : "YYYY-MM-DD"}
+                  </Text>
+                </View>
+              </InputRow>
+            </Pressable>
+
+            <Divider styles={styles} />
+
+   
+            <Text style={styles.sectionTitle}>성별</Text>
+            <View style={styles.genderRow}>
+              <Pressable
+                onPress={() => setGender("male")}
+                style={[styles.genderPill, gender === "male" && styles.genderPillOn]}
+              >
+                <Ionicons
+                  name="male-outline"
+                  size={16}
+                  color={gender === "male" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.genderTxt, gender === "male" && styles.genderTxtOn]}>남자</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setGender("female")}
+                style={[styles.genderPill, gender === "female" && styles.genderPillOn]}
+              >
+                <Ionicons
+                  name="female-outline"
+                  size={16}
+                  color={gender === "female" ? "#fff" : "#374151"}
+                />
+                <Text style={[styles.genderTxt, gender === "female" && styles.genderTxtOn]}>여자</Text>
+              </Pressable>
+            </View>
+
+            
             <TouchableOpacity
-              style={styles.roundBack}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="arrow-back" size={20} color="#6E7F6C" />
-            </TouchableOpacity>
-
-            <Pressable
               disabled={!canSubmit}
               onPress={onContinue}
-              style={({ pressed }) => [
-                styles.primaryBtn,
-                !canSubmit && { opacity: 0.5 },
-                pressed && { transform: [{ scale: 0.99 }] },
-              ]}
+              style={[styles.submitBtn, !canSubmit && { opacity: 0.5 }]}
             >
-              <Text style={styles.primaryTxt}>Continue</Text>
-            </Pressable>
+              <Text style={styles.submitTxt}>계속하기</Text>
+            </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Date Picker */}
-        {Platform.OS === "ios" ? (
-          <Modal
-            visible={showDate}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setShowDate(false)}
-          >
-            <View style={styles.modalBackdrop}>
-              <View style={styles.modalSheet}>
-                <DateTimePicker
-                  value={dob || new Date(2000, 0, 1)}
-                  mode="date"
-                  display="spinner"
-                  onChange={(_, d) => d && setDob(d)}
-                  maximumDate={new Date()}
-                />
-                <TouchableOpacity
-                  style={styles.modalDone}
-                  onPress={() => setShowDate(false)}
-                >
-                  <Text style={{ fontWeight: "600" }}>Done</Text>
-                </TouchableOpacity>
+        
+          {Platform.OS === "ios" ? (
+            <Modal
+              visible={showDate}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setShowDate(false)}
+            >
+              <View style={styles.modalBackdrop}>
+                <View style={styles.modalSheet}>
+                  <DateTimePicker
+                    value={dob || new Date(2000, 0, 1)}
+                    mode="date"
+                    display="spinner"
+                    onChange={(_, d) => d && setDob(d)}
+                    maximumDate={new Date()}
+                  />
+                  <TouchableOpacity style={styles.modalDone} onPress={() => setShowDate(false)}>
+                    <Text style={{ fontWeight: "600" }}>Done</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </Modal>
-        ) : (
-          showDate && (
-            <DateTimePicker
-              value={dob || new Date(2000, 0, 1)}
-              mode="date"
-              display="calendar"
-              onChange={onChangeDate}
-              maximumDate={new Date()}
-            />
-          )
-        )}
+            </Modal>
+          ) : (
+            showDate && (
+              <DateTimePicker
+                value={dob || new Date(2000, 0, 1)}
+                mode="date"
+                display="calendar"
+                onChange={onChangeDate}
+                maximumDate={new Date()}
+              />
+            )
+          )}
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const PRIMARY = "#2D5D9F";
-const SECONDARY = "#5B8DEF";
-const BACKGROUND = "#white";
-const ACCENT = "#E1ECF9";
+
+const PRIMARY = "#000";
+const BACKGROUND = "#fff";
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: BACKGROUND },
-  header: { alignItems: "center", paddingTop: 25 },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: PRIMARY,
-    marginVertical: 8,
+  safe: { flex: 1, backgroundColor: BACKGROUND },
+
+  container: {
+    flex: 1,
+    backgroundColor: BACKGROUND,
+    paddingTop: 50,
   },
-  avatarWrap: { marginTop: 6, marginBottom: 20 },
+
+ 
+  scrollContent: {
+    paddingBottom: 40,
+  },
+
+
+  backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
+
+ 
+  header: { alignItems: "center", gap: 6, marginBottom: 12, paddingHorizontal: 28 },
+  title: { fontSize: 28, fontWeight: "800", color: "#000", letterSpacing: 0.5 },
+  subtitle: { fontSize: 16, color: "#444", textAlign: "center", opacity: 0.85, lineHeight: 20 },
+
+  avatarWrap: { marginTop: 6, marginBottom: 6 },
   avatarShadow: {
     shadowColor: "#000",
     shadowOpacity: 0.18,
@@ -270,22 +298,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 6,
   },
-  avatar: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: "#fff",
-  },
-  avatarPlaceholder: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#EEF2FB",
-  },
+  avatar: { width: 110, height: 110, borderRadius: 55, backgroundColor: "#fff" },
+  avatarPlaceholder: { alignItems: "center", justifyContent: "center", backgroundColor: "#fff" },
   cameraBadge: {
     position: "absolute",
     right: 4,
     bottom: 4,
-    backgroundColor: SECONDARY,
+    backgroundColor: "#111",
     width: 26,
     height: 26,
     borderRadius: 13,
@@ -294,126 +313,85 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#fff",
   },
-  form: {
-    marginTop: 4,
-    marginHorizontal: 18,
-    padding: 16,
-    borderRadius: 24,
-    backgroundColor: "#ffffff",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 6,
-  },
-  label: {
-    marginTop: 8,
-    marginBottom: 6,
-    color: "#1E293B",
-    fontWeight: "700",
-  },
-  input: {
-    height: 44,
+
+
+  card: {
+    marginTop: 16,
+    marginHorizontal: 28,   
+    paddingHorizontal: 18,
+    paddingVertical: 22,
     borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 10 : 0,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
     backgroundColor: "#fff",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  inputError: { borderColor: "#F87171" },
+
+  label: { marginTop: 8, marginBottom: 12, color: "#1E293B", fontWeight: "700" },
+  sectionTitle: { fontSize: 14, fontWeight: "800", color: "#111827", marginBottom: 8, opacity: 0.9 },
+
+  inputWrap: {
+    position: "relative",
+    justifyContent: "center",
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+    paddingLeft: 44,
+    paddingRight: 12,
+  },
+
+  input: {
+    height: "100%",
+    fontSize: 15,
+    color: "#111827",
+  },
+  inputReadonly: { justifyContent: "center" },
+
+  leftIcon: { position: "absolute", left: 14, zIndex: 1 },
+
+  divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 14 },
+
   genderRow: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 24,
-    marginTop: 12,
-    marginBottom: 8,
+    gap: 22,
+    marginTop: 2,
+    marginBottom: 6,
   },
-  genderBtn: { flexDirection: "row", alignItems: "center", gap: 8 },
-  genderBtnOn: {},
-  genderTxt: { color: "#334155", fontSize: 16 },
-  genderTxtOn: { fontWeight: "800", color: PRIMARY },
-  radio: {
-    height: 18,
-    width: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: "#CBD5E1",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioOn: { borderColor: PRIMARY },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: PRIMARY,
-  },
-  bottomRow: {
+  genderPill: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 12,
-  },
-  roundBack: {
-    width: 52,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#F1F5FB",
-    alignItems: "center",
-    justifyContent: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+    height: 40,
+    borderRadius: 100,
+    backgroundColor: "#F3F4F6",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: "#E5E7EB",
   },
-  primaryBtn: {
-    flex: 1,
-    marginLeft: 12,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: ACCENT,
-    borderWidth: 1,
-    borderColor: "#C3D7F3",
-  },
-  primaryTxt: {
-    color: PRIMARY,
-    fontWeight: "800",
-    fontSize: 16,
-  },
-  backButton: {
-    position: "absolute",
-    top: 10,
-    left: 16,
-    zIndex: 10,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalSheet: {
-    width: "86%",
-    borderRadius: 16,
-    backgroundColor: "#fff",
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  modalDone: {
-    marginTop: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
+  genderPillOn: { backgroundColor: "#111", borderColor: "#111" },
+  genderTxt: { color: "#374151", fontSize: 14.5, fontWeight: "600" },
+  genderTxtOn: { color: "#fff" },
+
+  submitBtn: {
+    marginTop: 14,
+    height: 47,
     borderRadius: 10,
-    backgroundColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: PRIMARY,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
-  tagline: {
-    fontSize: 16,
-    color: "#444",
-    textAlign: "center",
-    marginBottom: 6,
-    fontWeight: "400",
-    opacity: 0.85,
-    lineHeight: 20,
-  },
+  submitTxt: { fontSize: 17, fontWeight: "800", color: "#fff", letterSpacing: 0.5 },
+
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", alignItems: "center", justifyContent: "center" },
+  modalSheet: { width: "86%", borderRadius: 16, backgroundColor: "#fff", paddingVertical: 12, alignItems: "center" },
+  modalDone: { marginTop: 6, paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10, backgroundColor: "#E2E8F0" },
 });

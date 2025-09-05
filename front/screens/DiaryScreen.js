@@ -1,94 +1,46 @@
-import React, { useState, useEffect } from 'react';
+// screens/DiaryScreen.js
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   SafeAreaView,
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  Image,
-  FlatList,
   ActivityIndicator,
-  Dimensions,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
-import DiaryView from './DiaryView';
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
+import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
+import DiaryList from "./DiaryList";
+import GalleryView from "./GalleryView";
 
-const DIARY_KEY = '@diary_tab_is_diary';
-const numColumns = 3;
-const screenWidth = Dimensions.get('window').width;
-const imageGap = 2;
-const imageSize = Math.floor((screenWidth - imageGap * (numColumns - 1)) / numColumns);
 
-function GalleryView() {
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(true);
+const BG = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT = "#111827";
+const TEXT_DIM = "#6B7280";
+const CARD_SHADOW = {
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+};
+const LEGACY_KEY = "@diary_local_entries"; 
+const LOCAL_KEY = (id) => `@diary_local_entries:${id || "unknown"}`;
 
-  const API_URL = 'http://서버주소/diary_photo';
+const DIARY_KEY = "@diary_tab_is_diary";
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          if (mounted) setLoading(false);
-          console.warn('토큰이 없습니다. 로그인 후 이용하세요.');
-          return;
-        }
-        const res = await fetch(API_URL, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          console.warn('서버 응답 오류:', res.status);
-          if (mounted) setLoading(false);
-          return;
-        }
-        const data = await res.json();
-        if (mounted) {
-          setPhotos(Array.isArray(data?.photos) ? data.photos : []);
-        }
-      } catch (e) {
-        console.error('사진 불러오기 실패:', e);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
-
-  const renderPhoto = ({ item }) => (
-    <Image
-      source={{ uri: item.photo_url }}
-      style={styles.photo}
-      resizeMode="cover"
-    />
-  );
-
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" /></View>;
-  if (!photos.length) return <View style={styles.center}><Text>등록된 사진이 없습니다.</Text></View>;
-
-  return (
-    <FlatList
-      data={photos}
-      renderItem={renderPhoto}
-      keyExtractor={(item, index) => (item.diary_id?.toString?.() ?? `noid`) + '_' + index}
-      numColumns={numColumns}
-      style={styles.galleryContainer}
-      columnWrapperStyle={{ gap: imageGap }}
-      contentContainerStyle={{ gap: imageGap }}
-    />
-  );
-}
-
-export default function DiaryScreen({ navigation }) {
-  const [diary, setDiary] = useState(true);
+export default function DiaryScreen() {
+  const navigation = useNavigation();
   const route = useRoute();
   const selectedDog = route.params?.selectedDog;
+  const dogId = route.params?.dogId ?? selectedDog?.id;
+
+  const [diary, setDiary] = useState(true);
+  const [stats, setStats] = useState({ total: 0, week: 0, photos: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
+
 
   useEffect(() => {
     (async () => {
@@ -96,123 +48,252 @@ export default function DiaryScreen({ navigation }) {
       if (saved !== null) setDiary(JSON.parse(saved));
     })();
   }, []);
-
   const toggleTab = async (isDiary) => {
     setDiary(isDiary);
     await AsyncStorage.setItem(DIARY_KEY, JSON.stringify(isDiary));
   };
 
+
+  const [reloadKey, setReloadKey] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.didSave) {
+        setReloadKey((k) => k + 1);
+        navigation.setParams({ didSave: undefined });
+      }
+    }, [route.params?.didSave])
+  );
+
+
+  const calcStats = useCallback(async () => {
+    setLoadingStats(true);
+    try {
+      const rawByDog = await AsyncStorage.getItem(LOCAL_KEY(dogId));
+      const byDog = rawByDog ? JSON.parse(rawByDog) : [];
+
+      const rawLegacy = await AsyncStorage.getItem(LEGACY_KEY);
+      const legacy = rawLegacy ? JSON.parse(rawLegacy) : [];
+      const list = [...byDog, ...legacy.filter(e => e.dogId === dogId)];
+
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay()); 
+
+      const total = list.length;
+      const week = list.filter((e) => {
+        const d = new Date(e.date || 0);
+        return d >= startOfWeek;
+      }).length;
+      const photos = list.reduce((acc, e) => acc + (e.photos?.length || 0), 0);
+      setStats({ total, week, photos });
+    } finally {
+      setLoadingStats(false);
+    }
+  }, [dogId]);
+  useEffect(() => {
+    calcStats();
+  }, [reloadKey, calcStats]);
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF6E9' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
+
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-          <Ionicons name="chevron-back" size={22} color="#5B7F6A" />
+          <Ionicons name="chevron-back" size={20} color={TEXT} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Diary</Text>
-        <View style={styles.iconBtn} />
+        <Text style={styles.headerTitle}>DIARY</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Calendar")} style={styles.iconBtn}>
+          <Ionicons name="calendar-outline" size={18} color={TEXT} />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.container}>
-        <Text style={styles.title}>
-          {selectedDog?.name ? `${selectedDog.name.toUpperCase()}'s DIARY` : "MY DOG'S DIARY"}
-        </Text>
+     
+      <View style={styles.heroCard}>
+  <Text style={styles.heroTop}>오늘의 기록</Text>
 
-        <View style={styles.tabHeader}>
-          <TouchableOpacity onPress={() => toggleTab(true)} style={[styles.tabButton, diary && styles.tabSelected]}>
-            <Text style={[styles.tabText, diary && styles.tabTextSelected]}>DIARY</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => toggleTab(false)} style={[styles.tabButton, !diary && styles.tabSelected]}>
-            <Text style={[styles.tabText, !diary && styles.tabTextSelected]}>GALLERY</Text>
-          </TouchableOpacity>
-        </View>
+   <Text
+    style={styles.heroMain}
+    numberOfLines={2}
+    adjustsFontSizeToFit
+    minimumFontScale={0.9}
+    ellipsizeMode="tail"
+  >
+    {selectedDog?.name ? `${selectedDog.name.toUpperCase()}'S JOURNAL` : "MY DOG'S JOURNAL"}
+  </Text>
 
-        {diary ? <DiaryView /> : <GalleryView />}
+ 
+  <View style={styles.heroStatsRow}>
+   
+    <View style={styles.statPill}>
+      <Ionicons name="calendar-outline" size={14} color={TEXT} />
+      <Text style={styles.statPillTxt}>이번 주 · {stats.week}</Text>
+    </View>
+    <View style={styles.statPill}>
+      <Ionicons name="image-outline" size={14} color={TEXT} />
+      <Text style={styles.statPillTxt}>사진 · {stats.photos}</Text>
+    </View>
+    <View style={styles.statPill}>
+      <Ionicons name="book-outline" size={14} color={TEXT} />
+      <Text style={styles.statPillTxt}>전체 · {stats.total}</Text>
+    </View>
+  </View>
+</View>
+
+
+      <View style={styles.tabHeader}>
+        <TouchableOpacity
+          onPress={() => toggleTab(true)}
+          style={[styles.tabButton, diary && styles.tabSelected]}
+        >
+          <Text style={[styles.tabText, diary && styles.tabTextSelected]}>DIARY</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => toggleTab(false)}
+          style={[styles.tabButton, !diary && styles.tabSelected]}
+        >
+          <Text style={[styles.tabText, !diary && styles.tabTextSelected]}>GALLERY</Text>
+        </TouchableOpacity>
       </View>
+
+
+      
+      <View style={{ flex: 1 }}>
+        {diary ? (
+          <DiaryList
+            key={reloadKey}
+            dogId={dogId}
+            onPressItem={(entry,dogIdParam) => navigation.navigate('DiaryDetail', { diaryId: entry.id, dogId: dogIdParam })}
+            onPressWrite={(dogIdParam) => navigation.navigate('DiaryEditor', { dogId: dogIdParam, selectedDog })}
+          />
+        ) : (
+          <GalleryView dogId={dogId} reloadKey={reloadKey} />
+        )}
+      </View>
+
+  
+    
+ 
     </SafeAreaView>
   );
 }
 
+function StatPill({ icon, label, value }) {
+  return (
+    <View style={styles.pill}>
+      <Ionicons name={icon} size={14} color={TEXT} />
+      <Text style={styles.pillTxt}>
+        {label} · <Text style={{ fontWeight: "900", color: TEXT }}>{String(value)}</Text>
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 18, paddingTop: 8, paddingBottom: 6, backgroundColor: '#EEF6E9',
+
+headerRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  paddingHorizontal: 18,
+
+  marginTop: 10,
+  marginBottom: 8,
+},
+iconBtn: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: BORDER,
+  ...CARD_SHADOW,
+},
+headerTitle: {
+  fontSize: 16,
+  fontWeight: "900",
+  color: TEXT,
+  letterSpacing: 0.5,
+  lineHeight: 20,  
+  flexShrink: 1,
+},
+
+
+heroCard: {
+  marginHorizontal: 16,
+  marginBottom: 12,
+  paddingVertical: 16,
+  paddingHorizontal: 14,
+  borderRadius: 16,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: BORDER,
+  ...CARD_SHADOW,
+
+  flexDirection: "column",
+  alignItems: "flex-start",
+  gap: 10,
+},
+heroTop: {
+  fontSize: 12,
+  color: TEXT_DIM,
+  fontWeight: "800",
+  lineHeight: 16,
+},
+
+heroStatsRow: {
+  width: "100%",
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 8,
+},
+statPill: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 999,
+  borderWidth: 1,
+  borderColor: BORDER,
+  backgroundColor: "#F9FAFB",
+},
+statPillTxt: { fontSize: 12, fontWeight: "900", color: TEXT },
+
+
+heroMain: {
+  width: "100%",
+  marginTop: 2,
+  fontSize: 25,      
+  lineHeight: 32,
+  fontWeight: "800",
+  color: TEXT,
+  letterSpacing: 0.2, 
+},
+  pill: {
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999,
+    borderWidth: 1, borderColor: BORDER, backgroundColor: "#F9FAFB",
+    flexDirection: "row", alignItems: "center", gap: 6,
   },
-  iconBtn: {
-    width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#EAF4EE', borderWidth: 1, borderColor: '#D7E8DB',
-  },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#5B7F6A' },
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
-  title: { fontSize: 30, fontWeight: '600', marginBottom: 12 },
-  tabHeader: {
-    flexDirection: 'row', backgroundColor: '#DCE9DD', borderRadius: 16, padding: 6, marginBottom: 16,
-  },
+  pillTxt: { fontSize: 12, fontWeight: "900", color: TEXT },
+
+  tabHeader: { flexDirection: "row", gap: 8, paddingHorizontal: 16, marginBottom: 10 },
   tabButton: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12,
+    flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 12,
+    borderWidth: 1, borderColor: BORDER, backgroundColor: "#F9FAFB",
   },
-  tabText: {
-    fontSize: 16, fontWeight: '600', color: '#93A39A',
+  tabSelected: { backgroundColor: "#fff" },
+  tabText: { fontSize: 13, fontWeight: "900", color: TEXT_DIM, letterSpacing: 1 },
+  tabTextSelected: { color: TEXT },
+
+  writeCtaWrap: { position: "absolute", left: 18, right: 18, bottom: 86, alignItems: "flex-end" },
+  writeCta: {
+    height: 44, paddingHorizontal: 14, borderRadius: 999, backgroundColor: "#111",
+    alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8,
+    ...CARD_SHADOW,
   },
-  tabSelected: {
-    backgroundColor: '#ffffff',
-  },
-  tabTextSelected: {
-    color: '#2B4A3C',
-  },
-  diaryContainer: {
-    flex: 1, gap: 16,
-  },
-  sectionLabel: {
-    fontSize: 16, fontWeight: '700', color: '#415247', marginBottom: 6,
-  },
-  diaryText: {
-    flex: 1, fontSize: 16, backgroundColor: '#fff', borderRadius: 12,
-    padding: 14, borderWidth: 1, borderColor: '#E0E8DE', minHeight: 300,
-  },
-  saveBtn: {
-    backgroundColor: '#5B7F6A', paddingVertical: 12, borderRadius: 10,
-    alignItems: 'center', marginTop: 10,
-  },
-  saveBtnText: {
-    color: '#fff', fontSize: 16, fontWeight: '700',
-  },
-  galleryContainer: { flex: 1 },
-  photo: { width: imageSize, height: imageSize, backgroundColor: '#eee' },
-  center: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
-  },
-  imageContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 12,
-  },
-  imageWrapper: {
-    position: 'relative',
-    width: 90,
-    height: 90,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
-  },
-  deleteIcon: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: 'white',
-    borderRadius: 10,
-  },
-  addImageBtn: {
-    marginTop: 16,
-    padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: '#EAF4EE',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#D7E8DB',
-  },
+  writeCtaTxt: { color: "#fff", fontWeight: "900" },
+
+
 });

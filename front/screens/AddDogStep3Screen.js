@@ -1,9 +1,25 @@
+// screens/AddDogStep3Screen.js
 import React, { useMemo } from "react";
 import {
-  View, Text, StyleSheet, TouchableOpacity, Pressable,
-  SafeAreaView, Image, ScrollView
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  SafeAreaView,
+  Image,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
+
+let __seq = 0;
+function newId() {
+  __seq = (__seq + 1) % 1e6;
+  return `${Date.now().toString(36)}_${__seq}_${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
 
 export default function AddDogStep3Screen({ navigation, route }) {
   const {
@@ -14,11 +30,11 @@ export default function AddDogStep3Screen({ navigation, route }) {
     name = "",
     breed = "",
     birth = null,
-    sex = null,
-    neutered = false,
-    weight = null,
-    unit = "kg",
+    sex = null,         
+    size = null,        
+    weight = null,      
     notes = null,
+
   } = route.params || {};
 
   const birthText = useMemo(() => {
@@ -36,24 +52,23 @@ export default function AddDogStep3Screen({ navigation, route }) {
 
   const weightText = useMemo(() => {
     if (weight == null || Number.isNaN(Number(weight))) return "-";
-    const w = Number(weight);
-    if (unit === "kg") {
-      return `${w} kg`;
-    } else {
-      const kg = (w * 0.453592).toFixed(1);
-      return `${w} lb  (${kg} kg)`;
-    }
-  }, [weight, unit]);
+    return `${Number(weight)} kg`;
+  }, [weight]);
+
+  const sizeText =
+    size === "small" ? "소형견" :
+    size === "medium" ? "중형견" :
+    size === "large" ? "대형견" : "-";
 
   const newDog = {
-    id: `${Date.now()}`,
+    id: newId(),
     name,
     breed,
     birth,
     sex,
-    neutered,
+    size,
     weight,
-    unit,
+    unit: "kg",
     notes,
     imageUri: photo || null,
     photo: photo || null,
@@ -69,7 +84,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
     });
   };
 
-  const onFinish = async () => {
+  const onFinish = () => {
     navigation.reset({
       index: 0,
       routes: [
@@ -106,128 +121,198 @@ export default function AddDogStep3Screen({ navigation, route }) {
       breed,
       birth,
       sex,
-      neutered,
+      size,
       weight,
-      unit,
+      unit: "kg",
       notes,
     });
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back-circle" size={32} color="#2D5D9F" />
-      </TouchableOpacity>
-      <View style={styles.progress}>
-        <View style={styles.dot} />
-        <View style={styles.dot} />
-        <View style={[styles.dot, styles.dotOn]} />
-      </View>
-
-      <ScrollView style={styles.flex} contentContainerStyle={{ paddingBottom: 24 }}>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+   
         <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back-circle" size={32} color="#888" />
+          </TouchableOpacity>
+
           <Text style={styles.title}>입력 내용을 확인해요</Text>
           <Text style={styles.subtitle}>필요하면 연필 버튼으로 수정할 수 있어요</Text>
+
+          <View style={styles.progress}>
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+            <View style={[styles.dot, styles.dotOn]} />
+          </View>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.avatarWrap}>
-            <View style={styles.avatarShadow}>
-              {photo ? (
-                <Image source={{ uri: photo }} style={styles.avatar} />
-              ) : (
-                <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                  <Ionicons name="paw-outline" size={56} color="#94A3B8" />
-                </View>
-              )}
-            </View>
+   
+        <View style={styles.avatarWrap}>
+          <View style={styles.avatarShadow}>
+            {photo ? (
+              <Image source={{ uri: photo }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Ionicons name="paw-outline" size={56} color="#C3C3C3" />
+              </View>
+            )}
           </View>
+        </View>
 
+
+        <View style={styles.card}>
+    
           <View style={styles.blockHeader}>
             <Text style={styles.blockTitle}>기본 정보</Text>
             <Pressable onPress={onEditStep1} hitSlop={8}>
-              <Ionicons name="pencil" size={18} color="#2D5D9F" />
+              <Ionicons name="pencil" size={18} color="#111" />
             </Pressable>
           </View>
+          <Row label="이름" value={name || "-"} />
+          <Row label="견종" value={breed || "-"} />
+          <Row label="생년월일" value={birthText} />
 
-          <View style={styles.rowItem}><Text style={styles.key}>Name</Text><Text style={styles.val}>{name || "-"}</Text></View>
-          <View style={styles.rowItem}><Text style={styles.key}>Breed</Text><Text style={styles.val}>{breed || "-"}</Text></View>
-          <View style={styles.rowItem}><Text style={styles.key}>Birth</Text><Text style={styles.val}>{birthText}</Text></View>
-
-          <View style={[styles.blockHeader, { marginTop: 12 }]}>
+       
+          <View style={[styles.blockHeader, { marginTop: 16 }]}>
             <Text style={styles.blockTitle}>건강 · 생활</Text>
             <Pressable onPress={onEditStep2} hitSlop={8}>
-              <Ionicons name="pencil" size={18} color="#2D5D9F" />
+              <Ionicons name="pencil" size={18} color="#111" />
             </Pressable>
           </View>
+          <Row label="성별" value={sex === "male" ? "Male" : sex === "female" ? "Female" : "-"} />
+          <Row label="체형" value={sizeText} />
+          <Row label="몸무게" value={weightText} />
+          <Row label="특이사항" value={notes || "-"} multiline />
+        </View>
 
-          <View style={styles.rowItem}><Text style={styles.key}>Sex</Text><Text style={styles.val}>{sex === "male" ? "Male" : sex === "female" ? "Female" : "-"}</Text></View>
-          <View style={styles.rowItem}><Text style={styles.key}>Neutered</Text><Text style={styles.val}>{neutered ? "Yes" : "No"}</Text></View>
-          <View style={styles.rowItem}><Text style={styles.key}>Weight</Text><Text style={styles.val}>{weightText}</Text></View>
-          <View style={[styles.rowItem, { alignItems: "flex-start" }]}>
-            <Text style={styles.key}>Notes</Text>
-            <Text style={[styles.val, { flex: 1 }]} numberOfLines={3}>{notes || "-"}</Text>
-          </View>
-
-          <View style={styles.buttonRow}>
-            <Pressable onPress={onAddAnother} style={({ pressed }) => [styles.btnSecondary, pressed && styles.pressed]}>
-              <Ionicons name="add-circle-outline" size={18} color="#2D5D9F" />
-              <Text style={styles.btnSecondaryTxt}>다른 강아지 추가하기</Text>
-            </Pressable>
-            <Pressable onPress={onFinish} style={({ pressed }) => [styles.btnPrimary, pressed && styles.pressed]}>
-              <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-              <Text style={styles.btnPrimaryTxt}>저장하고 시작하기</Text>
-            </Pressable>
-          </View>
+   
+        <View style={styles.buttonGroup}>
+          <Pressable onPress={onAddAnother} style={({ pressed }) => [styles.btn, styles.btnSecondary, pressed && styles.pressed]}>
+            <Ionicons name="add-circle-outline" size={18} color="#111" />
+            <Text style={styles.btnSecondaryTxt}>다른 강아지 추가하기</Text>
+          </Pressable>
+          <Pressable onPress={onFinish} style={({ pressed }) => [styles.btn, styles.btnPrimary, pressed && styles.pressed]}>
+            <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+            <Text style={styles.btnPrimaryTxt}>저장하고 시작하기</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+
+function Row({ label, value, multiline = false }) {
+  return (
+    <View style={[styles.rowItem, multiline && { alignItems: "flex-start" }]}>
+      <Text style={styles.key}>{label}</Text>
+      <Text
+        style={[styles.val, multiline && { flex: 1 }]}
+        numberOfLines={multiline ? 3 : 1}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+
+const PRIMARY = "#000";
+const BACKGROUND = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT_DARK = "#111827";
+const TEXT_DIM = "#475569";
+
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: "#F3F6FA", paddingHorizontal: 18, paddingTop: 40 },
-  backButton: { position: "absolute", top: 10, left: 16, zIndex: 10 },
-  progress: { flexDirection: "row", alignSelf: "center", marginTop: 8, gap: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#CBD5E1" },
-  dotOn: { backgroundColor: "#2D5D9F" },
-  header: { alignItems: "center", paddingTop: 8, paddingBottom: 6 },
-  title: { fontSize: 22, fontWeight: "800", color: "#2D5D9F" },
-  subtitle: { marginTop: 4, color: "#475569", textAlign: "center" },
-  card: {
-    marginTop: 10, padding: 18, borderRadius: 24, backgroundColor: "#fff",
-    shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 }, elevation: 5,
-  },
-  avatarWrap: { alignItems: "center", marginBottom: 12 },
+  safe: { flex: 1, backgroundColor: BACKGROUND },
+  container: { flex: 1, paddingHorizontal: 28, paddingTop: 20, backgroundColor: BACKGROUND },
+
+
+  header: { alignItems: "center", gap: 6, marginBottom: 12 },
+  backBtn: { alignSelf: "flex-start" },
+
+  
+  progress: { flexDirection: "row", gap: 6, marginTop: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E5E7EB" },
+  dotOn: { backgroundColor: "#111" },
+
+  title: { fontSize: 25, fontWeight: "800", color: PRIMARY, letterSpacing: 0.5 },
+  subtitle: { fontSize: 15, color: "#444", textAlign: "center", opacity: 0.85, lineHeight: 20 },
+
+  avatarWrap: { marginTop: 8, marginBottom: 8, alignItems: "center" },
   avatarShadow: {
-    shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 }, elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
   avatar: { width: 110, height: 110, borderRadius: 55, backgroundColor: "#fff" },
-  avatarPlaceholder: { alignItems: "center", justifyContent: "center" },
+  avatarPlaceholder: { alignItems: "center", justifyContent: "center", backgroundColor: "#fff" },
+
+  card: {
+    marginTop: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 22,
+    borderRadius: 22,
+    backgroundColor: "#fff",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+
   blockHeader: {
-    flexDirection: "row", alignItems: "center",
-    justifyContent: "space-between", marginTop: 4, marginBottom: 6
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
   },
-  blockTitle: { color: "#1E3A8A", fontWeight: "800" },
+  blockTitle: { fontSize: 17, fontWeight: "800", color: TEXT_DARK },
+
   rowItem: {
-    flexDirection: "row", justifyContent: "space-between",
-    paddingVertical: 10, borderBottomWidth: 1, borderColor: "#E2E8F0"
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#F1F5F9",
   },
-  key: { color: "#475569", fontWeight: "600", marginRight: 10, minWidth: 90 },
-  val: { color: "#0F172A", fontWeight: "700" },
-  buttonRow: { gap: 10, marginTop: 14 },
+  key: { color: TEXT_DIM, fontWeight: "700", marginRight: 10, minWidth: 90 },
+  val: { color: TEXT_DARK, fontWeight: "800" },
+
+  buttonGroup: { gap: 10, marginTop: 16 },
+  btn: {
+    height: 47,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    borderWidth: 1,
+  },
   btnSecondary: {
-    height: 48, borderRadius: 24, borderWidth: 1, borderColor: "#C7D2FE",
-    backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center",
-    flexDirection: "row", gap: 8
+    backgroundColor: "#fff",
+    borderColor: BORDER,
   },
-  btnSecondaryTxt: { color: "#2D5D9F", fontSize: 16, fontWeight: "700" },
+  btnSecondaryTxt: {
+    color: TEXT_DARK,
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+  },
   btnPrimary: {
-    height: 48, borderRadius: 24, borderWidth: 0,
-    backgroundColor: "#2D5D9F", alignItems: "center", justifyContent: "center",
-    flexDirection: "row", gap: 8
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
   },
-  btnPrimaryTxt: { color: "#fff", fontSize: 16, fontWeight: "800" },
-  pressed: { transform: [{ scale: 0.99 }] },
+  btnPrimaryTxt: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+  },
+  pressed: { transform: [{ scale: 0.98 }] },
 });

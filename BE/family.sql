@@ -1,0 +1,14 @@
+CREATE TABLE family (
+  family_id INT AUTO_INCREMENT PRIMARY KEY,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE invite_codes (
+  inviteCode_id INT AUTO_INCREMENT PRIMARY KEY,
+  family_id INT,
+  code VARCHAR(50) UNIQUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME,
+  used BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (family_id) REFERENCES family(family_id)
+);

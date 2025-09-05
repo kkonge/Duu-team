@@ -20,247 +20,346 @@ export default function SignUpScreen() {
   const [confirm, setConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
+  const [agree, setAgree] = useState(false);
 
   const emailOk = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
   const passOk = password.length >= 6;
   const matchOk = password === confirm && confirm.length > 0;
 
-  const canSubmit = emailOk && passOk && matchOk;
+  const score = useMemo(() => {
+
+    let s = 0;
+    if (password.length >= 6) s++;
+    if (/[A-Z]/.test(password)) s++;
+    if (/[0-9]/.test(password)) s++;
+    if (/[^A-Za-z0-9]/.test(password)) s++;
+    return Math.min(s, 4);
+  }, [password]);
+
+  const canSubmit = emailOk && passOk && matchOk && agree;
 
   const onSubmit = () => {
+    if (!canSubmit) return;
     console.log({ email, password });
-    navigation.navigate("UserProfile");
+    navigation.navigate("SignupSuccess");
   };
+
+  const StrengthBar = () => {
+    return (
+      <View style={styles.strengthWrap}>
+        {[0, 1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.strengthChunk,
+              i < score && styles.strengthOn,
+            ]}
+          />
+        ))}
+        <Text style={styles.strengthLabel}>
+          {score <= 1 ? "약함" : score === 2 ? "보통" : score === 3 ? "좋음" : "매우 좋음"}
+        </Text>
+      </View>
+    );
+  };
+
+  const LeftIcon = ({ name }) => (
+    <View style={styles.leftIcon}>
+      <Ionicons name={name} size={18} color="#94A3B8" />
+    </View>
+  );
+
+  const RightStateIcon = ({ ok, show }) =>
+    show ? (
+      <View style={styles.rightIcon}>
+        <Ionicons
+          name={ok ? "checkmark-circle" : "alert-circle"}
+          size={18}
+          color={ok ? "#10B981" : "#EF4444"}
+        />
+      </View>
+    ) : null;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <KeyboardAvoidingView
         behavior={Platform.select({ ios: "padding", android: undefined })}
-        style={styles.flex}
+        style={styles.container}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+    
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
 
-   
-        <View style={styles.headerWrap}>
-          <Text style={styles.welcome}>Welcome!</Text>
-          <Text style={styles.subtitle}>
-            <Text style={styles.brand}>멍로그에</Text> 가입하세요!
-          </Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Sign Up</Text>
+          <Text style={styles.subtitle}>멍로그에 가입하고 기록을 시작하세요!</Text>
         </View>
 
-      
+        {/* 카드 폼 */}
         <View style={styles.card}>
-       
+
+          {/* 이메일 */}
           <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              placeholder="Enter your email"
-              placeholderTextColor="#9AA4AF"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              style={[
-                styles.input,
-                email.length > 0 && !emailOk && styles.inputError,
-              ]}
-              returnKeyType="next"
-            />
+            <View style={styles.inputWrap}>
+              <LeftIcon name="mail-outline" />
+              <TextInput
+                placeholder="이메일 입력"
+                placeholderTextColor="#9AA4AF"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                style={[styles.input]}
+                returnKeyType="next"
+              />
+              <RightStateIcon ok={emailOk} show={email.length > 0} />
+            </View>
+            {email.length > 0 && !emailOk && (
+              <Text style={styles.helperError}>올바른 이메일 형식을 입력해 주세요.</Text>
+            )}
           </View>
 
-      
+          {/* 비밀번호 */}
           <View style={styles.field}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.passwordRow}>
+            <View style={styles.inputWrap}>
+              <LeftIcon name="lock-closed-outline" />
               <TextInput
-                placeholder="Enter your password"
+                placeholder="비밀번호 입력 (6자 이상)"
                 placeholderTextColor="#9AA4AF"
                 value={password}
                 onChangeText={setPassword}
-                textContentType="oneTimeCode"
                 secureTextEntry={!showPw}
-                style={[
-                  styles.input,
-                  styles.inputWithIcon,
-                  password.length > 0 && !passOk && styles.inputError,
-                ]}
+                textContentType="oneTimeCode"
+                style={[styles.input, styles.inputWithTail]}
                 returnKeyType="next"
               />
-              <Pressable onPress={() => setShowPw((s) => !s)} style={styles.eyeBtn}>
+              <Pressable onPress={() => setShowPw((s) => !s)} style={styles.tailBtn}>
                 <Ionicons
                   name={showPw ? "eye-outline" : "eye-off-outline"}
-                  size={20}
+                  size={18}
                   color="#64748B"
                 />
               </Pressable>
             </View>
+           
           </View>
 
-        
+          {/* 비밀번호 확인 */}
           <View style={styles.field}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.passwordRow}>
+            <View style={styles.inputWrap}>
+              <LeftIcon name="repeat-outline" />
               <TextInput
-                placeholder="Re-enter your password"
+                placeholder="비밀번호 재입력"
                 placeholderTextColor="#9AA4AF"
                 value={confirm}
                 onChangeText={setConfirm}
-                textContentType="oneTimeCode"
                 secureTextEntry={!showPw2}
-                style={[
-                  styles.input,
-                  styles.inputWithIcon,
-                  confirm.length > 0 && !matchOk && styles.inputError,
-                ]}
+                textContentType="oneTimeCode"
+                style={[styles.input, styles.inputWithTail]}
                 returnKeyType="done"
               />
-              <Pressable onPress={() => setShowPw2((s) => !s)} style={styles.eyeBtn}>
+              <Pressable onPress={() => setShowPw2((s) => !s)} style={styles.tailBtn}>
                 <Ionicons
                   name={showPw2 ? "eye-outline" : "eye-off-outline"}
-                  size={20}
+                  size={18}
                   color="#64748B"
                 />
               </Pressable>
             </View>
+            {confirm.length > 0 && !matchOk && (
+              <Text style={styles.helperError}>비밀번호가 일치하지 않습니다.</Text>
+            )}
           </View>
 
-     
-          <Pressable
-            disabled={!canSubmit}
-            onPress={onSubmit}
-            style={({ pressed }) => [
-              styles.signupBtn,
-              !canSubmit && { opacity: 0.5 },
-              pressed && { transform: [{ scale: 0.99 }] },
-            ]}
-          >
-            <Text style={styles.signupTxt}>Sign up</Text>
+          {/* 약관 동의 */}
+          <Pressable style={styles.agreeRow} onPress={() => setAgree((v) => !v)}>
+            <View style={[styles.checkbox, agree && styles.checkboxOn]}>
+              {agree && <Ionicons name="checkmark" size={14} color="#fff" />}
+            </View>
+            <Text style={styles.agreeText}>
+              이용약관 및 개인정보 처리방침에 동의합니다
+            </Text>
           </Pressable>
 
-        
-          <View style={styles.footerRow}>
-            <Text style={styles.footerDim}>이미 계정이 있으신가요?</Text>
-            <Pressable onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.loginLink}>Login!</Text>
-            </Pressable>
-          </View>
+          {/* 가입 버튼 */}
+          <TouchableOpacity
+            disabled={!canSubmit}
+            onPress={onSubmit}
+            style={[styles.submitBtn, !canSubmit && { opacity: 0.5 }]}
+          >
+            <Text style={styles.submitTxt}>가입하기</Text>
+          </TouchableOpacity>
+
+
+          
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const PRIMARY = "#2D5D9F";
-const BACKGROUND = "#F3F6FA";
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, justifyContent: "flex-start"},
-  backButton: {
+  container: {
+    flex: 1,
+    paddingHorizontal: 28,
+    paddingTop: 60,
+  
+  },
+  backBtn: {
     position: "absolute",
     top: 10,
     left: 20,
     zIndex: 10,
   },
-  headerWrap: {
-    paddingHorizontal: 24,
-    paddingTop: 72,
-    paddingBottom: 16,
+  header: {
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
   },
-  welcome: {
-    textAlign: "center",
-    fontSize: 36,
+  title: {
+    fontSize: 28,
     fontWeight: "800",
-    color: PRIMARY,
+    color: "#000",
     letterSpacing: 0.5,
-    marginBottom: 14,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#444",
     textAlign: "center",
-    lineHeight: 24,
-    fontWeight: "400",
     opacity: 0.85,
+    lineHeight: 20,
   },
-  loginTo: { fontWeight: "600", color: "#333" },
-  brand: { fontWeight: "800", color: PRIMARY },
 
   card: {
-    marginTop: 20,
-    marginHorizontal: 22,
+    marginTop: 30,
     paddingHorizontal: 18,
-    paddingVertical: 24,
-    borderRadius: 28,
-    backgroundColor: "#ffffff",
-    shadowColor: "#2D5D9F",
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    paddingVertical: 22,
+    borderRadius: 22,
+    backgroundColor: "#fff",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-    gap: 20,
+    elevation: 3,
+    gap: 16,
   },
+
   field: { gap: 8 },
-  label: {
-    color: "#1E293B",
-    fontSize: 15,
-    fontWeight: "600",
+
+
+  inputWrap: {
+    position: "relative",
+    justifyContent: "center",
   },
   input: {
-    height: 48,
+    height: 54,
     borderRadius: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 44,
     borderWidth: 1.2,
     borderColor: "#D1D5DB",
     backgroundColor: "#fff",
     fontSize: 15,
   },
-  inputError: {
-    borderColor: "#F87171",
+  inputWithTail: { paddingRight: 44 },
+
+  leftIcon: {
+    position: "absolute",
+    left: 14,
+    zIndex: 1,
   },
-  passwordRow: { position: "relative" },
-  inputWithIcon: { paddingRight: 42 },
-  eyeBtn: {
+  rightIcon: {
     position: "absolute",
     right: 12,
-    top: 12,
-    height: 20,
-    width: 28,
+    zIndex: 1,
+  },
+  tailBtn: {
+    position: "absolute",
+    right: 12,
+    height: 54,
+    width: 32,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  signupBtn: {
-    marginTop: 8,
-    height: 52,
-    borderRadius: 100,
+  helperError: {
+    marginTop: 2,
+    fontSize: 12.5,
+    color: "#EF4444",
+  },
+
+  
+  agreeRow: {
+    marginTop: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: PRIMARY,
+    backgroundColor: "#fff",
+  },
+  checkboxOn: {
+    backgroundColor: "#000",
+    borderColor: "#000",
+  },
+  agreeText: {
+    fontSize: 13.5,
+    color: "#374151",
+  },
+
+  
+  submitBtn: {
+    marginTop: 6,
+    height: 52,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#000",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
-  signupTxt: {
+  submitTxt: {
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#fff",
     letterSpacing: 0.5,
   },
 
-  footerRow: {
-    marginTop: 12,
+  dividerRow: {
+    marginTop: 14,
     flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
-    paddingBottom: 4,
+    alignItems: "center",
+    gap: 8,
   },
-  footerDim: { color: "#9AA4AF", fontSize: 14 },
-  loginLink: { color: PRIMARY, fontWeight: "700", fontSize: 14 },
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    flex: 1,
+  },
+  dividerText: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
+  altLink: {
+    marginTop: 8,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  altLinkTxt: {
+    fontSize: 14,
+    color: "#111",
+    fontWeight: "600",
+  },
 });

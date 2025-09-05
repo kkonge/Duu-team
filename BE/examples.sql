@@ -4,6 +4,29 @@ CREATE TABLE users (
     password VARCHAR(20) NOT NULL
 );
 
+ALTER TABLE users ADD COLUMN Nickname VARCHAR(50); 
+
+ALTER TABLE users ADD birth_date DATE NOT NULL;
+
+ALTER TABLE users ADD family_id INT NOT NULL DEFAULT;
+
+ALTER TABLE users
+ADD COLUMN refresh_token VARCHAR(500) DEFAULT NULL;
+
+--> table 이렇게 됨 
+CREATE TABLE users (
+    id VARCHAR(100) NOT NULL PRIMARY KEY,
+    username VARCHAR(100),
+    password VARCHAR(100) NOT NULL,
+    Nickname VARCHAR(50), 
+    birth_date DATE,
+    family_id INT,
+    refresh_token VARCHAR(500) DEFAULT NULL,
+    FOREIGN KEY (family_id) REFERENCES family(family_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
 INSERT INTO users (id, username, password) VALUES 
 ('1', 'user1', '1234@'),
 ('2', 'user2', '5678@'),
@@ -12,10 +35,11 @@ INSERT INTO users (id, username, password) VALUES
 
 
 CREATE TABLE pets (
+    pet_id INT AUTO_INCREMENT PRIMARY KEY,        -- 강아지 고유 ID 추가
     id VARCHAR(100) NOT NULL,                      
-    familyId VARCHAR(20) NOT NULL,                
-    name VARCHAR(20) NOT NULL,                     
-    breed VARCHAR(20) NOT NULL,                    
+    family_id VARCHAR(20),                
+    name VARCHAR(20),                            
+    breed VARCHAR(20),                            
     birth DATE,                                   
     sex VARCHAR(10),                              
     neutered BOOLEAN,                             
@@ -30,6 +54,9 @@ CREATE TABLE pets (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     FOREIGN KEY (createdBy) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    FOREIGN KEY (family_id) REFERENCES family(family_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );

@@ -65,9 +65,7 @@ exports.diary_upload = function(req ,res){
                     return res.status(500).json({ success: false, message: '서버 오류 발생(사진 저장 중)' });
                     }
                 }
-
                 completed++;
-
                 // 모든 사진 Insert 완료 시 응답
                 if (completed === photos.length && !hasError) {
                     return res.send('일기와 사진 저장 성공');
@@ -93,7 +91,7 @@ app.use((err, req, res, next) => { // 미들웨어 multer 에러 핸들러
 });
 
 
-exports.diary_photo = function(req, res){
+exports.diary_photo = function(req, res){  //response로 전체 사진들의 경로가 저장되어있는 배열 전달, 갤러리용 
     const userId = req.user.id; 
     db.query(`SELECT * FROM diary_photo WHERE id=? ORDER BY created_at DESC`,[userId],
         (error, results) => {
@@ -112,6 +110,42 @@ exports.diary_photo = function(req, res){
             };
         });
         res.json({ success: true, photos });
+        }
+    );
+};
+
+exports.diaryFirstPhotos = function(req, res){  //일기 페이지에서 날짜 별로 보이는 한장의 사진들 반환 
+    const userId = req.user.id; 
+    db.query(`SELECT * FROM diary_photo WHERE id=? ORDER BY created_at DESC`, [userId],
+        (error, results) => {
+            if (error) {
+                console.error(error);
+                return res.status(500).json({ message: 'DB 오류' });
+            }
+            // 날짜별 그룹핑용 객체
+            const groupedByDate = {};
+
+            results.forEach(photo => {
+                // created_at에서 날짜 부분만 추출 (YYYY-MM-DD)
+                const dateKey = photo.created_at.toISOString().slice(0,10);
+                
+                // 해당 날짜에 사진이 없으면 최초 사진 넣기
+                if (!groupedByDate[dateKey]) {
+                    groupedByDate[dateKey] = {
+                        id: photo.id,
+                        diary_id: photo.diary_id,
+                        photo_path: photo.photo_path,
+                        original_name: photo.original_name,
+                        created_at: photo.created_at,
+                        photo_url: `http://서버주소/${photo.photo_path}`
+                    };
+                }
+            });
+
+            // groupedByDate의 값들만 배열로 변환
+            const photos = Object.values(groupedByDate);
+
+            res.json({ success: true, photos });
         }
     );
 };
