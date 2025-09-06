@@ -12,9 +12,11 @@
     "axios": "^1.11.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.3",
-    "nanoid": "^5.1.5"
+    "nanoid": "^5.1.5",
+    "proj4": "^2.19.10"
   }
 }

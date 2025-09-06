@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const axios = require('axios');
 const db = require('./db');
-const { verifyToken } = require('./usersFunction');
+const { verifyToken } = require('./users.js');
 
 app.use(express.json());
 

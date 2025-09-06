@@ -16,6 +16,7 @@ function convertEPSG5174ToWGS84(x, y) {
 let cachedData = null;
 
 const csvFilePath = path.join('C:', 'Users', 'kunhy', 'OneDrive', '바탕 화면', '02_03_01_P_CSV', 'fulldata_02_03_01_P_동물병원.csv');
+//여긴 돌리는 컴퓨터나 csv 파일 위치에 따라 경로 달라짐 
 
 function loadCSVtoMemory() { // <- csv 파일 경로 들어감 
   return new Promise((resolve, reject) => {

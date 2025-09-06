@@ -13,28 +13,20 @@ const petFacility = require('./petFacility.js');
 const trashBin = require('./trashbin.js');
 const router = express.Router();
 const health = require('./health.js');
+const upload = require('./multerConfig.js');
+
+// 프로필 사진 업로드 예시
+app.post('/uploadProfilePhoto', upload.single('profile_photo'), (req, res) => {
+  usersFunction.uploadProfilePhoto(req, res);
+});
+
 
 app.use(express.json());
 app.use(cors());
 app.use('/animal-hospitals', animalHospital); // 동물 병원 api 활용 
 
-const storage = multer.diskStorage({  //storage 선언 
-  destination: function(req, file, cb){
-    cb(null, 'uploads/');
-  },
-  filename: function(req, file, cb){
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-}); 
-
 //app.use('/user', express.static('uploads'));
 app.use('/uploads', express.static('uploads'));
-
-
-const upload = multer({   //미들웨어
-  storage: storage, 
-  limits: {files :5 }
-});  
 
 app.set('views', './views_file');
 app.set('view engine', 'html');
@@ -57,10 +49,6 @@ app.get('/diaryFirstPhotos', usersFunction.verifyToken, (req, res)=>{  //diary �
   diaryFunction.diaryFirstPhotos(req, res);
 });
 
-app.get('/home', (req, res)=>{      //홈화면 어떻게 할지 프론트 팀이랑 상의
-  usersFunction.home(req, res);
-});
-
 app.post('/user_register', (req, res)=>{  //사용자 등록 한번에 다 하는 버전 
   usersFunction.user_register(req, res);
 });
@@ -71,6 +59,10 @@ app.post('/registerStart', (req, res)=>{ //단계별 회원가입 - 이메일, �
 
 app.post('/user_profile', (req, res)=>{ //단계별 회원가입 - 사용자 프로필 저장 
   usersFunction.user_profile(req, res);
+});
+
+app.post('/uploadProfilePhoto', upload.single('profile_photo'), (req, res)=>{
+  usersFunction.uploadProfilePhoto(req, res);
 });
 
 app.post('/pet_register', (req, res)=>{  //강아지 등록 한번에 다 하는 버전(사진 저장 제외)
@@ -154,6 +146,6 @@ app.post('/api/health/check', usersFunction.verifyToken, health.saveSelfCheck);
 
 app.get('/api/health/check/history', usersFunction.verifyToken, health.getSelfCheckHistory);
 
-app.listen(3000,()=>{
+app.listen(3000, '0.0.0.0', () => {
   console.log('server is running on 3000 port');
 });
