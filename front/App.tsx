@@ -4,7 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import StackNavigator from './navigation/StackNavigator';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
-import { FamilyProvider } from './context/FamilyContext'; // ★ 추가
+import { FamilyProvider } from './context/FamilyContext'; 
+import { SelectedDogProvider } from './context/SelectedDogContext'; 
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -23,9 +24,11 @@ export default function App() {
 
   return (
     <FamilyProvider> {/* ★ 여기로 전체 감싸기 */}
-      <NavigationContainer>
-        <StackNavigator />
-      </NavigationContainer>
+      <SelectedDogProvider>
+        <NavigationContainer>
+          <StackNavigator />
+        </NavigationContainer>
+      </SelectedDogProvider>
     </FamilyProvider>
   );
 }

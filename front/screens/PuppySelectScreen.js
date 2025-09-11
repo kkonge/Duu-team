@@ -1,5 +1,4 @@
 // screens/PuppySelectScreen.js
-import { useFamily } from "../context/FamilyContext";
 import React, { useMemo } from "react";
 import {
   View,
@@ -14,18 +13,17 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
+import { useFamily } from "../context/FamilyContext";
+import { useSelectedDog } from "../context/SelectedDogContext";
 
 function getAgeLabel(birth) {
   if (!birth) return "-";
   const d = new Date(birth);
   if (isNaN(d.getTime())) return "-";
   const now = new Date();
-
   let years = now.getFullYear() - d.getFullYear();
   let months = now.getMonth() - d.getMonth();
   let days = now.getDate() - d.getDate();
-
   if (days < 0) months -= 1;
   if (months < 0) {
     years -= 1;
@@ -36,27 +34,44 @@ function getAgeLabel(birth) {
   return `${years}y ${months}m`;
 }
 
-/* --------- Screen --------- */
 export default function PuppySelectScreen() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { users, activeUserId, getUser, isLoaded } = useFamily();
 
+  // 가족 컨텍스트
+  const { users, activeUserId, getUser, isLoaded: isFamilyLoaded } = useFamily();
+  const me = getUser();
+  const familyList = Object.values(users || {}).filter((u) => u.id !== activeUserId);
 
-  const me = getUser(); 
+  // 강아지 전역 컨텍스트
+  const {
+    dogProfiles: ctxDogs = [],
+    setSelectedDogId,
+    isLoaded: isDogsLoaded, // 있으면 사용, 없으면 없어도 동작해
+  } = useSelectedDog?.() || {};
 
-
-  const familyList = Object.values(users || {}).filter(u => u.id !== activeUserId);
-
+  // 파라미터 폴백
   const userProfileParam = route.params?.userProfile || null;
-  const familyProfilesParam = Array.isArray(route.params?.familyProfiles) ? route.params.familyProfiles : [];
+  const familyProfilesParam = Array.isArray(route.params?.familyProfiles)
+    ? route.params.familyProfiles
+    : [];
+  const routeDogs = Array.isArray(route.params?.dogProfiles) ? route.params.dogProfiles : [];
+
+  // 데이터 소스 결정
+  const dogs = useMemo(() => {
+    // 컨텍스트에 있으면 그걸 우선 사용, 없으면 라우트 폴백
+    return (ctxDogs && ctxDogs.length > 0 ? ctxDogs : routeDogs) || [];
+  }, [ctxDogs, routeDogs]);
 
   const meSafe = me || userProfileParam || null;
-  const familySafe = (isLoaded && familyList.length >= 0) ? familyList : familyProfilesParam;
+  const familySafe =
+    isFamilyLoaded && familyList.length >= 0 ? familyList : familyProfilesParam;
 
-  const dogs = Array.isArray(route.params?.dogProfiles) ? route.params.dogProfiles : [];
- 
-  const data = useMemo(() => dogs, [dogs]);
+  const onSelectDog = (dog) => {
+    // ✅ 전역으로 선택만 바꾸고, 파라미터 없이 이동
+    if (setSelectedDogId) setSelectedDogId(dog.id);
+    navigation.navigate("Home");
+  };
 
   const renderItem = ({ item }) => {
     const uri = item.imageUri || item.photo || null;
@@ -66,11 +81,7 @@ export default function PuppySelectScreen() {
 
     return (
       <Pressable
-        onPress={() => navigation.navigate({
-          name: "Home",
-          key: `Home-${item.id}`,   
-          params: { selectedDog: item, dogId: item.id },
-        })}
+        onPress={() => onSelectDog(item)}
         style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       >
         <View style={styles.thumb}>
@@ -84,7 +95,9 @@ export default function PuppySelectScreen() {
         </View>
 
         <View style={styles.cardBody}>
-          <Text numberOfLines={1} style={styles.dogName}>{name}</Text>
+          <Text numberOfLines={1} style={styles.dogName}>
+            {name}
+          </Text>
           <View style={styles.metaRow}>
             <Text style={styles.metaText}>{ageLabel}</Text>
             {breed ? <Text style={styles.metaDim}> • {breed}</Text> : null}
@@ -99,19 +112,20 @@ export default function PuppySelectScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        
+        {/* Back / Add */}
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-circle" size={32} color="#888" />
         </TouchableOpacity>
+
         <Pressable
-          onPress={() => navigation.navigate("AddDogStep1", route.params || {})}
+          onPress={() => navigation.navigate("AddDogStep1")}
           style={({ pressed }) => [styles.addBtn, pressed && { transform: [{ scale: 0.98 }] }]}
         >
           <Ionicons name="add" size={18} color="#fff" />
           <Text style={styles.addTxt}>Add</Text>
         </Pressable>
 
-   
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Your Family</Text>
           <Text style={styles.subtitle}>
@@ -121,13 +135,13 @@ export default function PuppySelectScreen() {
           </Text>
         </View>
 
-
+        {/* List or Empty */}
         {dogs.length > 0 ? (
           <FlatList
-            data={data}
+            data={dogs}
             keyExtractor={(item, idx) => String(item.id || idx)}
             renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 140 }} 
+            contentContainerStyle={{ paddingBottom: 140 }}
             ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
             showsVerticalScrollIndicator={false}
           />
@@ -137,9 +151,11 @@ export default function PuppySelectScreen() {
               <Ionicons name="paw-outline" size={28} color="#9AA4AF" />
             </View>
             <Text style={styles.emptyTitle}>No dogs yet</Text>
-            <Text style={styles.emptyText}>우측 상단 Add 버튼으로 강아지 프로필을 추가해 보세요.</Text>
+            <Text style={styles.emptyText}>
+              우측 상단 Add 버튼으로 강아지 프로필을 추가해 보세요.
+            </Text>
             <Pressable
-              onPress={() => navigation.navigate("AddDogStep1", route.params || {})}
+              onPress={() => navigation.navigate("AddDogStep1")}
               style={({ pressed }) => [styles.primaryBtn, pressed && { transform: [{ scale: 0.98 }] }]}
             >
               <Text style={styles.primaryTxt}>Add a dog</Text>
@@ -147,59 +163,56 @@ export default function PuppySelectScreen() {
           </View>
         )}
 
-
+        {/* Family strip */}
         <View style={styles.footerStrip}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.footerContent}
           >
+            {meSafe ? (
+              <View style={styles.memberItem}>
+                <View style={styles.avatarWrap}>
+                  {meSafe.photoUri ? (
+                    <Image source={{ uri: meSafe.photoUri }} style={styles.avatar} />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                      <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
+                    </View>
+                  )}
+                </View>
+                <Text numberOfLines={1} style={styles.avatarName}>
+                  {meSafe.nickname || meSafe.username || "Me"}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.memberItem}>
+                <View style={[styles.avatarWrap, styles.avatarPlaceholder]}>
+                  <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
+                </View>
+                <Text numberOfLines={1} style={styles.avatarName}>
+                  Me
+                </Text>
+              </View>
+            )}
 
+            {(familySafe || []).map((m) => (
+              <View key={m.id || m.username || m.nickname} style={styles.memberItem}>
+                <View style={styles.avatarWrap}>
+                  {m.photoUri ? (
+                    <Image source={{ uri: m.photoUri }} style={styles.avatar} />
+                  ) : (
+                    <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                      <Ionicons name="person-outline" size={16} color="#9AA4AF" />
+                    </View>
+                  )}
+                </View>
+                <Text numberOfLines={1} style={styles.avatarName}>
+                  {m.nickname || m.username || "Member"}
+                </Text>
+              </View>
+            ))}
 
-          {(meSafe) ? (
-  <View style={styles.memberItem}>
-    <View style={styles.avatarWrap}>
-      {meSafe.photoUri ? (
-        <Image source={{ uri: meSafe.photoUri }} style={styles.avatar} />
-      ) : (
-        <View style={[styles.avatar, styles.avatarPlaceholder]}>
-          <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
-        </View>
-      )}
-    </View>
-    <Text numberOfLines={1} style={styles.avatarName}>
-      {meSafe.nickname || meSafe.username || "Me"}
-    </Text>
-  </View>
-) : (
- 
-  <View style={styles.memberItem}>
-    <View style={[styles.avatarWrap, styles.avatarPlaceholder]}>
-      <Ionicons name="person-circle-outline" size={22} color="#9AA4AF" />
-    </View>
-    <Text numberOfLines={1} style={styles.avatarName}>Me</Text>
-  </View>
-)}
-
-
-{(familySafe || []).map((m) => (
-  <View key={m.id || m.username || m.nickname} style={styles.memberItem}>
-    <View style={styles.avatarWrap}>
-      {m.photoUri ? (
-        <Image source={{ uri: m.photoUri }} style={styles.avatar} />
-      ) : (
-        <View style={[styles.avatar, styles.avatarPlaceholder]}>
-          <Ionicons name="person-outline" size={16} color="#9AA4AF" />
-        </View>
-      )}
-    </View>
-    <Text numberOfLines={1} style={styles.avatarName}>
-      {m.nickname || m.username || "Member"}
-    </Text>
-  </View>
-))}
-
-        
             <Pressable
               onPress={() => navigation.navigate("InviteFamily")}
               style={({ pressed }) => [styles.invitePill, pressed && { transform: [{ scale: 0.98 }] }]}
@@ -214,7 +227,7 @@ export default function PuppySelectScreen() {
   );
 }
 
-
+/* --------- styles --------- */
 const PRIMARY = "#000";
 const BACKGROUND = "#fff";
 const BORDER = "#E5E7EB";
@@ -232,25 +245,29 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: { flex: 1, backgroundColor: BACKGROUND, paddingHorizontal: 28, paddingTop: 50 },
 
-
   backBtn: { position: "absolute", top: 10, left: 16, zIndex: 10 },
   addBtn: {
-    position: "absolute", top: 10, right: 16, zIndex: 10,
-    height: 34, paddingHorizontal: 12, borderRadius: 10,
+    position: "absolute",
+    top: 10,
+    right: 16,
+    zIndex: 10,
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: 10,
     backgroundColor: PRIMARY,
-    flexDirection: "row", alignItems: "center", gap: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     ...CARD_SHADOW,
   },
   addTxt: { color: "#fff", fontWeight: "800" },
-
 
   header: { alignItems: "center", marginBottom: 12 },
   title: { fontSize: 28, fontWeight: "800", color: PRIMARY, letterSpacing: 0.5 },
   subtitle: { fontSize: 14, color: TEXT_DIM, marginTop: 6 },
 
-  
   card: {
-    marginTop: 20, 
+    marginTop: 20,
     flexDirection: "row",
     alignItems: "center",
     gap: 18,
@@ -280,19 +297,27 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 15, color: TEXT_DARK, fontWeight: "700" },
   metaDim: { fontSize: 14, color: TEXT_DIM, fontWeight: "600" },
 
-
   emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyIconWrap: {
-    width: 64, height: 64, borderRadius: 32,
-    alignItems: "center", justifyContent: "center",
-    borderWidth: 1, borderColor: BORDER, backgroundColor: "#fff",
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: BORDER,
+    backgroundColor: "#fff",
     ...CARD_SHADOW,
   },
   emptyTitle: { fontSize: 18, fontWeight: "900", color: TEXT_DARK, marginTop: 10 },
   emptyText: { fontSize: 14, color: TEXT_DIM, textAlign: "center" },
   primaryBtn: {
-    marginTop: 10, height: 46, borderRadius: 10, paddingHorizontal: 16,
-    alignItems: "center", justifyContent: "center",
+    marginTop: 10,
+    height: 46,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: PRIMARY,
     ...CARD_SHADOW,
   },
@@ -301,33 +326,52 @@ const styles = StyleSheet.create({
   /* Footer strip (family) */
   footerStrip: {
     position: "absolute",
-    left: 0, right: 0, bottom: 0,
-    paddingVertical: 10, paddingHorizontal: 12,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     backgroundColor: "#FFFFFFEE",
-    borderTopWidth: 1, borderColor: BORDER,
+    borderTopWidth: 1,
+    borderColor: BORDER,
   },
   footerContent: { alignItems: "center", paddingRight: 12 },
 
   memberItem: { alignItems: "center", marginRight: 12 },
   avatarWrap: {
-    width: 44, height: 44, borderRadius: 22, overflow: "hidden",
-    backgroundColor: "#fff", borderWidth: 1, borderColor: BORDER,
-    alignItems: "center", justifyContent: "center",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: BORDER,
+    alignItems: "center",
+    justifyContent: "center",
   },
   avatar: { width: "100%", height: "100%" },
   avatarPlaceholder: { alignItems: "center", justifyContent: "center" },
   avatarName: {
-    marginTop: 4, fontSize: 11, color: TEXT_DARK, fontWeight: "700",
-    maxWidth: 60, textAlign: "center",
+    marginTop: 4,
+    fontSize: 11,
+    color: TEXT_DARK,
+    fontWeight: "700",
+    maxWidth: 60,
+    textAlign: "center",
   },
 
   invitePill: {
-    height: 44, paddingHorizontal: 12, borderRadius: 22,
-    backgroundColor: "#fff", borderWidth: 1, borderColor: BORDER,
-    flexDirection: "row", alignItems: "center", gap: 6,
+    height: 44,
+    paddingHorizontal: 12,
+    borderRadius: 22,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: BORDER,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   inviteTxt: { color: TEXT_DARK, fontWeight: "800" },
-
 
   pressed: { transform: [{ scale: 0.99 }] },
 });

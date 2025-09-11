@@ -226,9 +226,6 @@ export default function ChatBotScreen() {
             maxLength={800}
           />
 
-          <TouchableOpacity style={styles.inputIconBtn}>
-            <Ionicons name="mic-outline" size={20} color={TEXT_DIM} />
-          </TouchableOpacity>
 
           <Pressable
             onPress={sendMessage}

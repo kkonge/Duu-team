@@ -52,7 +52,7 @@ export default function AddDogStep2Screen({ navigation, route }) {
       sex,
       size,
       weight: Number(weight),
-      unit: "kg",   // 항상 kg
+      unit: "kg",  
       notes: notes.trim().length ? notes.trim() : null,
     });
   };

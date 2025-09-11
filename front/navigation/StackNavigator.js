@@ -27,6 +27,8 @@ import DiagnosisScreen from '../screens/DiagnoisisScreen';
 import DiagnosisResultScreen from '../screens/DiagnosisResultScreen';
 import IdCardStack from '../screens/IdCardScreen';
 import WalkScreen from '../screens/WalkScreen';
+import ApiTestScreen from '../screens/ApiTestScreen';
+import SettingsScreen from '../screens/SettingScreen';
 
 
 
@@ -64,6 +66,8 @@ export default function StackNavigator(){
             <Stack.Screen name='Diagnosis' component={DiagnosisScreen} />
             <Stack.Screen name='IdCard' component={IdCardStack} />
             <Stack.Screen name='Walk' component={WalkScreen} />
+            <Stack.Screen name='ApiTest' component={ApiTestScreen} />
+            <Stack.Screen name='Settings' component={SettingsScreen} />
 
 
 

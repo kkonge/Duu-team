@@ -294,14 +294,17 @@ const styles = StyleSheet.create({
   },
   choiceBtnText: { color: INK, fontWeight: "700" },
 
-  chip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: BORDER,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-  },
+ chip: {
+   flex: 1,                
+   marginHorizontal: 4,         
+   borderRadius: 12,
+   borderWidth: 1,
+   borderColor: BORDER,
+   height: 42,                  
+   alignItems: "center",
+   justifyContent: "center",
+   backgroundColor: "#fff",
+ },
   chipText: { color: INK, fontWeight: "700" },
 
   metaRow: { marginTop: 16, flexDirection: "row", gap: 8, flexWrap: "wrap" },

@@ -9,19 +9,29 @@ import {
   SafeAreaView,
   Image,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSelectedDog } from "../context/SelectedDogContext";
 
+const PRIMARY = "#000";
+const BACKGROUND = "#fff";
+const BORDER = "#E5E7EB";
+const TEXT_DARK = "#111827";
+const TEXT_DIM = "#475569";
+const DOGS_KEY = "DOGS_V1";
 
+/** 고유 id 생성기(충돌 최소화) */
 let __seq = 0;
 function newId() {
   __seq = (__seq + 1) % 1e6;
-  return `${Date.now().toString(36)}_${__seq}_${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
+  return `${Date.now().toString(36)}_${__seq}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export default function AddDogStep3Screen({ navigation, route }) {
+  const { setSelectedDog } = useSelectedDog();
+
   const {
     userProfile = null,
     familyProfiles = [],
@@ -30,11 +40,10 @@ export default function AddDogStep3Screen({ navigation, route }) {
     name = "",
     breed = "",
     birth = null,
-    sex = null,         
-    size = null,        
-    weight = null,      
+    sex = null,          // "male" | "female"
+    size = null,         // "small" | "medium" | "large"
+    weight = null,       // number (kg)
     notes = null,
-
   } = route.params || {};
 
   const birthText = useMemo(() => {
@@ -51,8 +60,9 @@ export default function AddDogStep3Screen({ navigation, route }) {
   }, [birth]);
 
   const weightText = useMemo(() => {
-    if (weight == null || Number.isNaN(Number(weight))) return "-";
-    return `${Number(weight)} kg`;
+    const n = Number(weight);
+    if (!Number.isFinite(n)) return "-";
+    return `${n} kg`;
   }, [weight]);
 
   const sizeText =
@@ -60,23 +70,25 @@ export default function AddDogStep3Screen({ navigation, route }) {
     size === "medium" ? "중형견" :
     size === "large" ? "대형견" : "-";
 
+  
   const newDog = {
     id: newId(),
-    name,
-    breed,
-    birth,
-    sex,
-    size,
-    weight,
+    name: name?.trim(),
+    breed: breed?.trim() || null,
+    birth: birth || null,
+    sex: sex || null,
+    size: size || null,
+    weight: Number.isFinite(Number(weight)) ? Number(weight) : null,
     unit: "kg",
-    notes,
-    imageUri: photo || null,
-    photo: photo || null,
+    notes: notes?.trim() || null,
+    imageUri: photo || null, // 렌더링에서 주로 쓰는 키
+    photo: photo || null,    // 호환키
   };
 
   const nextDogProfiles = [...dogProfiles, newDog];
 
-  const onAddAnother = () => {
+  const onAddAnother = async () => {
+    // 누적만 하고 다시 Step1로
     navigation.navigate("AddDogStep1", {
       userProfile,
       familyProfiles,
@@ -84,7 +96,19 @@ export default function AddDogStep3Screen({ navigation, route }) {
     });
   };
 
-  const onFinish = () => {
+  const persistDogs = async (list) => {
+    try {
+      await AsyncStorage.setItem(DOGS_KEY, JSON.stringify(list));
+    } catch (e) {
+      console.warn("Failed to save dogs:", e);
+    }
+  };
+
+const onFinish = async () => {
+  try {
+    await persistDogs(nextDogProfiles); 
+
+
     navigation.reset({
       index: 0,
       routes: [
@@ -93,12 +117,15 @@ export default function AddDogStep3Screen({ navigation, route }) {
           params: {
             userProfile,
             familyProfiles,
-            dogProfiles: nextDogProfiles,
+            dogProfiles: nextDogProfiles, 
           },
         },
       ],
     });
-  };
+  } catch (e) {
+    Alert.alert("저장 오류", "저장 중 문제가 발생했어요. 다시 시도해 주세요.");
+  }
+};
 
   const onEditStep1 = () =>
     navigation.navigate("AddDogStep1", {
@@ -134,10 +161,10 @@ export default function AddDogStep3Screen({ navigation, route }) {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-   
+        {/* 헤더 */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back-circle" size={32} color="#888" />
+            <Ionicons name="chevron-back" size={22} color="#111" />
           </TouchableOpacity>
 
           <Text style={styles.title}>입력 내용을 확인해요</Text>
@@ -150,7 +177,7 @@ export default function AddDogStep3Screen({ navigation, route }) {
           </View>
         </View>
 
-   
+        {/* 아바타 */}
         <View style={styles.avatarWrap}>
           <View style={styles.avatarShadow}>
             {photo ? (
@@ -163,20 +190,20 @@ export default function AddDogStep3Screen({ navigation, route }) {
           </View>
         </View>
 
-
+        {/* 카드 */}
         <View style={styles.card}>
-    
+          {/* 기본 정보 */}
           <View style={styles.blockHeader}>
             <Text style={styles.blockTitle}>기본 정보</Text>
             <Pressable onPress={onEditStep1} hitSlop={8}>
               <Ionicons name="pencil" size={18} color="#111" />
             </Pressable>
           </View>
-          <Row label="이름" value={name || "-"} />
-          <Row label="견종" value={breed || "-"} />
+          <Row label="이름" value={newDog.name || "-"} />
+          <Row label="견종" value={newDog.breed || "-"} />
           <Row label="생년월일" value={birthText} />
 
-       
+          {/* 건강 · 생활 */}
           <View style={[styles.blockHeader, { marginTop: 16 }]}>
             <Text style={styles.blockTitle}>건강 · 생활</Text>
             <Pressable onPress={onEditStep2} hitSlop={8}>
@@ -186,56 +213,53 @@ export default function AddDogStep3Screen({ navigation, route }) {
           <Row label="성별" value={sex === "male" ? "Male" : sex === "female" ? "Female" : "-"} />
           <Row label="체형" value={sizeText} />
           <Row label="몸무게" value={weightText} />
-          <Row label="특이사항" value={notes || "-"} multiline />
+          <Row label="특이사항" value={newDog.notes || "-"} multiline />
         </View>
 
-   
+        {/* 버튼들 */}
         <View style={styles.buttonGroup}>
-          <Pressable onPress={onAddAnother} style={({ pressed }) => [styles.btn, styles.btnSecondary, pressed && styles.pressed]}>
-            <Ionicons name="add-circle-outline" size={18} color="#111" />
-            <Text style={styles.btnSecondaryTxt}>다른 강아지 추가하기</Text>
-          </Pressable>
-          <Pressable onPress={onFinish} style={({ pressed }) => [styles.btn, styles.btnPrimary, pressed && styles.pressed]}>
+
+          <Pressable
+            onPress={onFinish}
+            style={({ pressed }) => [styles.btn, styles.btnPrimary, pressed && styles.pressed]}
+          >
             <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
             <Text style={styles.btnPrimaryTxt}>저장하고 시작하기</Text>
           </Pressable>
+          <Pressable
+            onPress={onAddAnother}
+            style={({ pressed }) => [styles.btn, styles.btnSecondary, pressed && styles.pressed]}
+          >
+            <Ionicons name="add-circle-outline" size={18} color="#111" />
+            <Text style={styles.btnSecondaryTxt}>다른 강아지 추가하기</Text>
+          </Pressable>
+          
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-
+/* 재사용 Row */
 function Row({ label, value, multiline = false }) {
   return (
     <View style={[styles.rowItem, multiline && { alignItems: "flex-start" }]}>
       <Text style={styles.key}>{label}</Text>
-      <Text
-        style={[styles.val, multiline && { flex: 1 }]}
-        numberOfLines={multiline ? 3 : 1}
-      >
+      <Text style={[styles.val, multiline && { flex: 1 }]} numberOfLines={multiline ? 3 : 1}>
         {value}
       </Text>
     </View>
   );
 }
 
-
-const PRIMARY = "#000";
-const BACKGROUND = "#fff";
-const BORDER = "#E5E7EB";
-const TEXT_DARK = "#111827";
-const TEXT_DIM = "#475569";
-
+/* 스타일 */
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BACKGROUND },
   container: { flex: 1, paddingHorizontal: 28, paddingTop: 20, backgroundColor: BACKGROUND },
 
-
   header: { alignItems: "center", gap: 6, marginBottom: 12 },
   backBtn: { alignSelf: "flex-start" },
 
-  
   progress: { flexDirection: "row", gap: 6, marginTop: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E5E7EB" },
   dotOn: { backgroundColor: "#111" },
@@ -294,25 +318,9 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
   },
-  btnSecondary: {
-    backgroundColor: "#fff",
-    borderColor: BORDER,
-  },
-  btnSecondaryTxt: {
-    color: TEXT_DARK,
-    fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 0.2,
-  },
-  btnPrimary: {
-    backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
-  },
-  btnPrimaryTxt: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 0.2,
-  },
+  btnSecondary: { backgroundColor: "#fff", borderColor: BORDER },
+  btnSecondaryTxt: { color: TEXT_DARK, fontSize: 16, fontWeight: "800", letterSpacing: 0.2 },
+  btnPrimary: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  btnPrimaryTxt: { color: "#fff", fontSize: 16, fontWeight: "800", letterSpacing: 0.2 },
   pressed: { transform: [{ scale: 0.98 }] },
 });

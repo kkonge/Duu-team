@@ -12,6 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true
     },
@@ -28,5 +29,6 @@
     "plugins": [
       "expo-font"
     ]
+    
   }
 }

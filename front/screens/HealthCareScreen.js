@@ -16,7 +16,6 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
 const INK = "#0B0B0B";
 const INK_DIM = "#6B7280";
 const BG = "#FFFFFF";
@@ -31,29 +30,11 @@ const SHADOW = {
   elevation: 3,
 };
 
-/* --------- Storage Keys --------- */
-const STORAGE_KEY = "HEALTH_ENTRIES_V1";
-const STORAGE_KEY_ASSESS = "HEALTH_ASSESS_V1";
+/* --------- Base Storage Key Prefixes --------- */
+const STORAGE_KEY_BASE = "HEALTH_ENTRIES_V1";
+const STORAGE_KEY_ASSESS_BASE = "HEALTH_ASSESS_V1";
 
-
-function Section({ title, children }) {
-  return (
-    <View style={[styles.section, SHADOW]}>
-      {title ? <Text style={styles.sectionTitle}>{title}</Text> : null}
-      {children}
-    </View>
-  );
-}
-function StatTile({ label, value }) {
-  return (
-    <View style={styles.statTile}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
-  );
-}
-
-
+/* --------- Utils --------- */
 const toNum = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -97,10 +78,11 @@ function levelMeta(tone) {
       return { text: "정상", emoji: "👍", color: "#111" };
   }
 }
+const keyFor = (base, dogId) => `${base}:${dogId || "unknown"}`;
 
-
-async function loadEntries() {
-  const raw = await AsyncStorage.getItem(STORAGE_KEY);
+/* --------- Storage helpers (강아지별) --------- */
+async function loadEntries(dogId) {
+  const raw = await AsyncStorage.getItem(keyFor(STORAGE_KEY_BASE, dogId));
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -109,11 +91,11 @@ async function loadEntries() {
     return [];
   }
 }
-async function saveEntries(list) {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+async function saveEntries(dogId, list) {
+  await AsyncStorage.setItem(keyFor(STORAGE_KEY_BASE, dogId), JSON.stringify(list));
 }
-async function loadAssessments() {
-  const raw = await AsyncStorage.getItem(STORAGE_KEY_ASSESS);
+async function loadAssessments(dogId) {
+  const raw = await AsyncStorage.getItem(keyFor(STORAGE_KEY_ASSESS_BASE, dogId));
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -125,13 +107,53 @@ async function loadAssessments() {
   }
 }
 
+/* --------- Small UI --------- */
+function Section({ title, children }) {
+  return (
+    <View style={[styles.section, SHADOW]}>
+      {title ? <Text style={styles.sectionTitle}>{title}</Text> : null}
+      {children}
+    </View>
+  );
+}
+function StatTile({ label, value }) {
+  return (
+    <View style={styles.statTile}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+    </View>
+  );
+}
 
-
+/* ================== HealthHome ================== */
 export function HealthHome() {
   const nav = useNavigation();
+  const route = useRoute();
+
+  // 강아지 판별 (HomeScreen에서 넘기던 형태 모두 대응)
+  const dog = route.params?.selectedDog || null;
+  const dogId = route.params?.dogId || dog?.id || null;
+  const dogName = dog?.name || route.params?.dogName || "우리 강아지";
 
   const [entries, setEntries] = useState([]);
   const [assessList, setAssessList] = useState([]);
+
+  // 강아지 바뀔 때마다 해당 강아지의 데이터 로드
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const [loadedEntries, loadedAssess] = await Promise.all([
+        loadEntries(dogId),
+        loadAssessments(dogId),
+      ]);
+      if (!mounted) return;
+      setEntries(loadedEntries);
+      setAssessList(loadedAssess);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [dogId]);
 
   const latestWeight = useMemo(() => getLatest(entries, "weight"), [entries]);
   const latestWalk   = useMemo(() => getLatest(entries, "walk"), [entries]);
@@ -147,16 +169,7 @@ export function HealthHome() {
   const walkCls= classifyWalk(recentWalkMin);
   const overall= overallAssessment(wCls.tone, walkCls.tone);
 
-  useEffect(() => {
-    (async () => {
-      const [loadedEntries, loadedAssess] = await Promise.all([loadEntries(), loadAssessments()]);
-      setEntries(loadedEntries);
-      setAssessList(loadedAssess);
-    })();
-  }, []);
-
   const latestAssess = assessList?.[0] || null;
-  const latestMeta   = latestAssess ? levelMeta(latestAssess.level) : null;
 
   // 의심 질환 Top 3
   const topSuspects = useMemo(() => {
@@ -175,7 +188,6 @@ export function HealthHome() {
     }
     return dedup;
   }, [latestAssess]);
-
 
   const [openEdit, setOpenEdit] = useState(false);
   const [bufWeight, setBufWeight] = useState("");
@@ -217,34 +229,34 @@ export function HealthHome() {
 
     const updated = [...entries, ...newOnes].sort((a, b) => b.ts - a.ts);
     setEntries(updated);
-    await saveEntries(updated);
+    await saveEntries(dogId, updated); // ★ 강아지별 저장
     setOpenEdit(false);
   };
 
- 
   const goEvaluation = () => {
-    nav.navigate("Evaluation", { weight, recentWalkMin, condition, nextVaccine });
+    nav.navigate("Evaluation", { dogId, dogName, weight, recentWalkMin, condition, nextVaccine });
   };
   const goDiagnosis = () => {
-    nav.navigate("Diagnosis", { weight, recentWalkMin, condition, nextVaccine });
+    nav.navigate("Diagnosis", { dogId, dogName, weight, recentWalkMin, condition, nextVaccine });
   };
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => nav.goBack()}>
           <Ionicons name="chevron-back" size={22} color={INK} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>HEALTH</Text>
+        <Text style={styles.headerTitle}>HEALTH · {dogName}</Text>
         <TouchableOpacity onPress={goDiagnosis}>
           <Ionicons name="pulse-outline" size={22} color={INK} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
- 
+        {/* 요약 카드 */}
         <Section>
-          <Text style={styles.caption}>콩이의 건강 요약</Text>
+          <Text style={styles.caption}>{dogName}의 건강 요약</Text>
           <View style={styles.statGrid}>
             <StatTile label="체중" value={weight === "-" ? "-" : `${weight} kg`} />
             <StatTile label="최근 산책" value={recentWalkMin === "-" ? "-" : `${recentWalkMin} 분`} />
@@ -258,7 +270,7 @@ export function HealthHome() {
           </TouchableOpacity>
         </Section>
 
-   
+        {/* 지표·추이 프리뷰 -> Evaluation 스크린 */}
         <Pressable onPress={goEvaluation}>
           <View style={[styles.evalPreviewCard, SHADOW]}>
             <View style={styles.evalPreviewHeader}>
@@ -288,30 +300,29 @@ export function HealthHome() {
           </View>
         </Pressable>
 
-
+        {/* 최근 진단 */}
         <Section title="최근 진단">
           {assessList?.[0] ? (
             (() => {
               const latestAssess = assessList[0];
-              const latestMeta = levelMeta(latestAssess.level);
-              const topSuspects = Object.values(latestAssess.suspects || {})
+              const meta = levelMeta(latestAssess.level);
+              const top = Object.values(latestAssess.suspects || {})
                 .flat()
                 .filter(Boolean)
                 .sort((a, b) => (b.conf || 0) - (a.conf || 0));
               const seen = new Set();
               const dedup = [];
-              for (const it of topSuspects) {
+              for (const it of top) {
                 if (seen.has(it.name)) continue;
                 seen.add(it.name);
                 dedup.push(it);
                 if (dedup.length >= 3) break;
               }
-
               return (
                 <>
                   <View style={styles.assessRow}>
-                    <Text style={[styles.assessText, { color: latestMeta.color }]}>
-                      {latestMeta.text} <Text style={styles.assessEmoji}>{latestMeta.emoji}</Text>
+                    <Text style={[styles.assessText, { color: meta.color }]}>
+                      {meta.text} <Text style={styles.assessEmoji}>{meta.emoji}</Text>
                     </Text>
                     <Text style={{ fontSize: 14, color: INK }}>
                       {latestAssess.scoreOverall} <Text style={{ color: INK_DIM }}>/ 100</Text>
@@ -321,11 +332,7 @@ export function HealthHome() {
                   {dedup.length > 0 ? (
                     <View style={styles.badgeRow}>
                       {dedup.map((s, i) => (
-                        <Text
-                          key={`${s.name}-${i}`}
-                          style={[styles.badge, styles.badgeOk]}
-                          numberOfLines={1}
-                        >
+                        <Text key={`${s.name}-${i}`} style={[styles.badge, styles.badgeOk]} numberOfLines={1}>
                           {s.name} · {"★".repeat(Math.max(1, Math.min(3, s.conf || 1)))}
                         </Text>
                       ))}
@@ -412,18 +419,12 @@ export function HealthHome() {
         </Section>
       </ScrollView>
 
-
       <TouchableOpacity style={styles.primaryCta} onPress={goDiagnosis}>
-        <Text style={styles.primaryCtaText}>콩이의 건강진단 하러가기</Text>
+        <Text style={styles.primaryCtaText}>{dogName}의 건강진단 하러가기</Text>
       </TouchableOpacity>
 
-
-      <Modal
-        visible={openEdit}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setOpenEdit(false)}
-      >
+      {/* 기록 모달 */}
+      <Modal visible={openEdit} animationType="slide" transparent onRequestClose={() => setOpenEdit(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.sheet}>
             <View style={styles.sheetHeader}>
@@ -433,7 +434,6 @@ export function HealthHome() {
               </TouchableOpacity>
             </View>
 
-            {/* 체중 */}
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>체중 (kg)</Text>
               <TextInput
@@ -446,7 +446,6 @@ export function HealthHome() {
               />
             </View>
 
-            {/* 최근 산책 */}
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>최근 산책 (분)</Text>
               <TextInput
@@ -459,7 +458,6 @@ export function HealthHome() {
               />
             </View>
 
-            {/* 컨디션 */}
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>컨디션</Text>
               <View style={styles.radioRow}>
@@ -480,7 +478,6 @@ export function HealthHome() {
               </View>
             </View>
 
-            {/* 다음 접종 */}
             <View style={styles.field}>
               <Text style={styles.fieldLabel}>다음 접종 (YYYY-MM-DD)</Text>
               <TextInput
@@ -493,7 +490,6 @@ export function HealthHome() {
               />
             </View>
 
-           
             <View style={styles.sheetBtns}>
               <TouchableOpacity style={styles.btnGhost} onPress={() => setOpenEdit(false)}>
                 <Text style={styles.btnGhostText}>취소</Text>
@@ -509,11 +505,11 @@ export function HealthHome() {
   );
 }
 
-
+/* ================== Evaluation ================== */
 export function Evaluation() {
   const nav = useNavigation();
   const route = useRoute();
-  const { weight = "-", recentWalkMin = "-", condition = "좋음" } = route.params || {};
+  const { dogName = "우리 강아지", weight = "-", recentWalkMin = "-", condition = "좋음" } = route.params || {};
   const weightPct = toPercent(weight, 4, 9);
   const walkPct = toPercent(recentWalkMin, 0, 90);
 
@@ -523,7 +519,7 @@ export function Evaluation() {
         <TouchableOpacity onPress={() => nav.goBack()}>
           <Ionicons name="chevron-back" size={22} color="#111" />
         </TouchableOpacity>
-        <Text style={styles.evalTitle}>Evaluation</Text>
+        <Text style={styles.evalTitle}>Evaluation · {dogName}</Text>
         <View style={{ width: 22 }} />
       </View>
 
@@ -560,7 +556,7 @@ export function Evaluation() {
   );
 }
 
-
+/* --------- Common --------- */
 function ProgressBar({ percent = 50 }) {
   const p = Math.max(0, Math.min(100, isNaN(Number(percent)) ? 0 : Number(percent)));
   return (
@@ -570,7 +566,7 @@ function ProgressBar({ percent = 50 }) {
   );
 }
 
-
+/* --------- Styles --------- */
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   header: {
@@ -801,6 +797,5 @@ const styles = StyleSheet.create({
   },
   shadow: SHADOW,
 });
-
 
 export default HealthHome;

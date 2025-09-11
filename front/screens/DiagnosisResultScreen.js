@@ -291,7 +291,7 @@ export default function DiagnosisResultScreen() {
     else Alert.alert("저장 실패", "저장 중 문제가 발생했어요.");
   };
 
-  const goHome = () => nav.navigate("HealthHome");
+  const goHome = () => nav.navigate("HealthCare");
   const goEvaluation = () => nav.navigate("Evaluation");
 
   return (
